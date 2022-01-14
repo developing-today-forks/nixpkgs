@@ -235,11 +235,11 @@ let
           in
           nameValuePair "network-addresses-${i.name}" {
             description = "Address configuration of ${i.name}";
-
-            wantedBy =
+            wantedBy = mkIf i.neededForBoot (
               deviceDependency i.name
               ++ optional config.boot.isContainer "network.target"
-              ++ optional (isDefaultGateway4 || isDefaultGateway6) "network-online.target";
+              ++ optional (isDefaultGateway4 || isDefaultGateway6) "network-online.target"
+            );
             bindsTo = deviceDependency i.name;
             partOf = [ "networking-scripted.target" ];
             after = [

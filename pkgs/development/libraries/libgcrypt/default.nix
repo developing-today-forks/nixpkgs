@@ -1,0 +1,35 @@
+{ lib, stdenv, fetchurl, libgpgerror, enableCapabilities ? false, libcap }:
+
+assert enableCapabilities -> stdenv.isLinux;
+
+stdenv.mkDerivation rec {
+  name = "libgcrypt-1.6.4";
+
+  src = fetchurl {
+    url = "mirror://gnupg/libgcrypt/${name}.tar.bz2";
+    sha256 = "09k06gs27gxfha07sa9rpf4xh6mvphj9sky7n09ymx75w9zjrg69";
+  };
+
+  buildInputs =
+    [ libgpgerror ]
+    ++ lib.optional enableCapabilities libcap;
+
+  # Make sure libraries are correct for .pc and .la files
+  # Also make sure includes are fixed for callers who don't use libgpgcrypt-config
+  postInstall = ''
+    sed -i 's,#include <gpg-error.h>,#include "${libgpgerror}/include/gpg-error.h",g' $out/include/gcrypt.h
+  '' + stdenv.lib.optionalString enableCapabilities ''
+    sed -i 's,\(-lcap\),-L${libcap}/lib \1,' $out/lib/libgcrypt.la
+  '';
+
+  doCheck = true;
+
+  meta = {
+    homepage = https://www.gnu.org/software/libgcrypt/;
+    description = "General-pupose cryptographic library";
+    license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.all;
+    maintainers = [ lib.maintainers.wkennington ];
+    repositories.git = git://git.gnupg.org/libgcrypt.git;
+  };
+}

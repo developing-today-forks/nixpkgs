@@ -1,0 +1,55 @@
+diff --git a/scripts/msmtpq/msmtpq b/scripts/msmtpq/msmtpq
+index 1b39fc6..4baa19b 100755
+--- a/scripts/msmtpq/msmtpq
++++ b/scripts/msmtpq/msmtpq
+@@ -70,8 +70,8 @@ MSMTP=msmtp
+ ##            ( chmod 0700 msmtp.queue )
+ ##
+ ## the queue dir - modify this to reflect where you'd like it to be  (no quotes !!)
+-Q=~/.msmtp.queue
+-[ -d "$Q" ] || mkdir -m 0700 "$Q" || \
++Q=${MSMTP_QUEUE:-~/.msmtp.queue}
++[ -d "$Q" ] || mkdir -m 0700 -p "$Q" || \
+   err '' "msmtpq : can't find or create msmtp queue directory [ $Q ]" ''     # if not present - complain ; quit
+ ##
+ ## set the queue log file var to the location of the msmtp queue log file
+@@ -84,7 +84,10 @@ Q=~/.msmtp.queue
+ ##     (doing so would be inadvisable under most conditions, however)
+ ##
+ ## the queue log file - modify (or comment out) to taste  (but no quotes !!)
+-LOG=~/log/msmtp.queue.log
++LOG=${MSMTP_LOG:-~/log/msmtp.queue.log}
++[ -d "$(dirname "$LOG")" ] || mkdir -p "$(dirname "$LOG")"
++
++JOURNAL=@journal@
+ ## ======================================================================================
+ 
+ ## msmtpq can use the following environment variables :
+@@ -138,6 +141,7 @@ on_exit() {                          # unlock the queue on exit if the lock was
+ ## display msg to user, as well
+ ##
+ log() {
++  local NAME=msmtpq
+   local ARG RC PFX
+   PFX="$('date' +'%Y %d %b %H:%M:%S')"
+                                      # time stamp prefix - "2008 13 Mar 03:59:45 "
+@@ -155,10 +159,19 @@ log() {
+     done
+   fi
+ 
++  if [ "$JOURNAL" == "Y" ]; then
++    for ARG ; do
++      [ -n "$ARG" ] && \
++        echo "$ARG" | systemd-cat -t $NAME -p info
++    done
++  fi
++
+   if [ -n "$RC" ] ; then             # an error ; leave w/error return
+     [ -n "$LKD" ] && lock_queue -u   # unlock here (if locked)
+     [ -n "$LOG" ] && \
+       echo "    exit code = $RC" >> "$LOG" # logging ok ; send exit code to log
++    [ "$JOURNAL" == "Y" ] && \
++      echo "exit code= $RC" | systemd-cat -t $NAME -p emerg
+     exit "$RC"                       # exit w/return code
+   fi
+ }

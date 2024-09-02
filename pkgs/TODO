@@ -1,0 +1,16 @@
+* Bump freetype to 2.1.7 (but it breaks Pango 1.2.5).
+
+* Patch development/tools/misc/libtool not to search standard
+  directories for libraries (like setup.sh does now). [do we want
+  this?]
+
+* In setup.sh: add configureFlagsArray or something
+
+* Inform freedesktop people that Xaw requires Xpm.
+
+* After building gcc, filter out references to /tmp/nix... in
+  .../lib/libsupc++.la and .../lib/libstdc++.la
+
+* diffutils retains a dependency on coreutils/bin/pr; causes stdenv to
+  depend on 2 copies of coreutils (the first one impure in
+  stdenv-nix-linux!)

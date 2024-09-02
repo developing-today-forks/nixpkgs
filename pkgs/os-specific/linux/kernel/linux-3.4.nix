@@ -1,0 +1,16 @@
+{ stdenv, fetchurl, ... } @ args:
+
+import ./generic.nix (args // rec {
+  version = "3.4.82"; # don't update until solving https://lkml.org/lkml/2014/3/12/420
+  extraMeta.branch = "3.4";
+
+  src = fetchurl {
+    url = "mirror://kernel/linux/kernel/v3.x/linux-${version}.tar.xz";
+    sha256 = "1z1kdbc4s3lpzpxfgcqkj6da3vp2xgk6q1314z0lamcaqhfsrr1x";
+  };
+
+  features.iwlwifi = true;
+  features.efiBootStub = true;
+  features.needsCifsUtils = true;
+  features.netfilterRPFilter = true;
+})

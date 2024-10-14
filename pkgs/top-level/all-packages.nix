@@ -3303,7 +3303,7 @@ with pkgs;
 
   inherit (callPackages ../tools/security/bitwarden-directory-connector { }) bitwarden-directory-connector-cli bitwarden-directory-connector;
 
-  bitwarden-menu = python3Packages.callPackage ../applications/misc/bitwarden-menu { };
+  bitwarden-menu = python311Packages.callPackage ../applications/misc/bitwarden-menu { };
 
   bklk = callPackage ../applications/misc/bklk { };
 
@@ -33087,7 +33087,7 @@ with pkgs;
 
   typioca = callPackage ../applications/misc/typioca { };
 
-  ueberzug = with python3Packages; toPythonApplication ueberzug;
+  ueberzug = with python311Packages; toPythonApplication ueberzug;
 
   ueberzugpp = callPackage ../by-name/ue/ueberzugpp/package.nix {
     stdenv = if stdenv.hostPlatform.isDarwin then overrideSDK stdenv "11.0" else stdenv;

@@ -11,6 +11,10 @@
   musl,
   xorg,
 }:
+let
+  srcHash = "sha256-9ClosoDIT+yP2dvNenHW2RSxLimOT3znXD+Pq+N6cQA=";
+  pnpmDepsHash = "sha256-ld2+WUVJ2DtiwWmsxkYsU3ft3knHJvjMwSwZlk7reG8=";
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "wrangler";
   version = "3.80.1";
@@ -19,12 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "cloudflare";
     repo = "workers-sdk";
     rev = "wrangler@${finalAttrs.version}";
-    hash = "sha256-9ClosoDIT+yP2dvNenHW2RSxLimOT3znXD+Pq+N6cQA=";
+    hash = srcHash;
   };
 
   pnpmDeps = pnpm_9.fetchDeps {
     inherit (finalAttrs) pname version src;
-    hash = "sha256-ld2+WUVJ2DtiwWmsxkYsU3ft3knHJvjMwSwZlk7reG8=";
+    hash = pnpmDepsHash;
   };
 
   buildInputs = [
@@ -78,6 +82,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.updateScript = ./update.sh;
   meta = {
     description = "Command-line interface for all things Cloudflare Workers";
     homepage = "https://github.com/cloudflare/workers-sdk#readme";

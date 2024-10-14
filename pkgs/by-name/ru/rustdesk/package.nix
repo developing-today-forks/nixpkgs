@@ -33,6 +33,7 @@
   alsa-lib,
   makeDesktopItem,
   copyDesktopItems,
+  fetchpatch,
 }:
 
 rustPlatform.buildRustPackage rec {

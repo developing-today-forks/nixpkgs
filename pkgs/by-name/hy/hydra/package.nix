@@ -124,13 +124,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "hydra";
-  version = "0-unstable-2024-09-15";
+  version = "0-unstable-2024-10-08";
 
   src = fetchFromGitHub {
     owner = "NixOS";
     repo = "hydra";
-    rev = "b6f44b5cd020d95c405e149e4c3a0e9dc785e31a";
-    hash = "sha256-dXDOX6IvAeznNoh73P2QWstBJ/jqfzEKjgNvdfsGTuY=";
+    rev = "c69e30122bf7e7a7d3de70dc2418263c6e44159b";
+    hash = "sha256-khkY1GG43/VUBt6g7Egt0Zz0V/rXxnDUpOLtanFum7Y=";
   };
 
   buildInputs = [
@@ -173,7 +173,7 @@ stdenv.mkDerivation (finalAttrs: {
       darcs
       gnused
       breezy
-    ] ++ lib.optionals stdenv.isLinux [ rpm dpkg cdrkit ]
+    ] ++ lib.optionals stdenv.hostPlatform.isLinux [ rpm dpkg cdrkit ]
   );
 
   nativeBuildInputs = [

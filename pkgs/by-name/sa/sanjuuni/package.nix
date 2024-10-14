@@ -7,6 +7,7 @@
   poco,
   ocl-icd,
   opencl-clhpp,
+  gitUpdater,
   callPackage,
 }:
 
@@ -38,8 +39,11 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  passthru.tests = {
-    run-on-nixos-artwork = callPackage ./tests/run-on-nixos-artwork.nix { };
+  passthru = {
+    tests = {
+      run-on-nixos-artwork = callPackage ./tests/run-on-nixos-artwork.nix { };
+    };
+    updateScript = gitUpdater { };
   };
 
   meta = with lib; {
@@ -48,7 +52,7 @@ stdenv.mkDerivation rec {
     changelog = "https://github.com/MCJack123/sanjuuni/releases/tag/${version}";
     maintainers = [ maintainers.tomodachi94 ];
     license = licenses.gpl2Plus;
-    broken = stdenv.isDarwin;
+    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "sanjuuni";
   };
 }

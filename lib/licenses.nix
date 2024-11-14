@@ -213,6 +213,11 @@ lib.mapAttrs mkLicense ({
     fullName = "BSD 3-Clause Clear License";
   };
 
+  bsd3Lbnl = {
+    spdxId = "BSD-3-Clause-LBNL";
+    fullName = "Lawrence Berkeley National Labs BSD variant license";
+  };
+
   bsdOriginal = {
     spdxId = "BSD-4-Clause";
     fullName = ''BSD 4-clause "Original" or "Old" License'';
@@ -1210,6 +1215,11 @@ lib.mapAttrs mkLicense ({
   tcltk = {
     spdxId = "TCL";
     fullName = "TCL/TK License";
+  };
+
+  tost = {
+    fullName = "Tomorrow Open Source Technology License 1.0";
+    url = "https://github.com/PixarAnimationStudios/OpenUSD/blob/release/LICENSE.txt";
   };
 
   ucd = {

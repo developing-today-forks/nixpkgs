@@ -174,14 +174,14 @@ let
           in
           nameValuePair "network-addresses-${i.name}"
           { description = "Address configuration of ${i.name}";
-            wantedBy = [
+            wantedBy = mkIf i.neededForBoot [
               "network-setup.service"
               "network.target"
             ];
             # order before network-setup because the routes that are configured
             # there may need ip addresses configured
             before = [ "network-setup.service" ];
-            bindsTo = mkIf i.neededForBoot (deviceDependency i.name);
+            bindsTo = (deviceDependency i.name);
             after = [ "network-pre.target" ] ++ (deviceDependency i.name);
             serviceConfig.Type = "oneshot";
             serviceConfig.RemainAfterExit = true;

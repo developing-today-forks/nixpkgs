@@ -3,17 +3,18 @@
   stdenv,
   fetchFromGitHub,
   python3Packages,
+  unstableGitUpdater,
 }:
 python3Packages.buildPythonApplication {
   pname = "exo";
-  version = "0-unstable-2024-10-29";
+  version = "0-unstable-2024-12-07";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exo-explore";
     repo = "exo";
-    rev = "50a1b171f64a75594793147aa39db933ef38aed9";
-    hash = "sha256-hzguPEQDTKBWe8Um+pwJpsctPbQqA6QW5LGknKWFaKo=";
+    rev = "db9de97fa6ecef51d1b7eec6758b55c402da786e";
+    hash = "sha256-1tChxxP8saeBjLsOpL8GYCNyhlXkN2Mg2LruyB3K3/g=";
   };
 
   build-system = with python3Packages; [ setuptools ];
@@ -26,13 +27,14 @@ python3Packages.buildPythonApplication {
     aiohttp
     aiohttp-cors
     aiofiles
-    blobfile
     grpcio
     grpcio-tools
     jinja2
     netifaces
     numpy
+    nuitka
     nvidia-ml-py
+    opencv-python
     pillow
     prometheus-client
     protobuf
@@ -40,7 +42,6 @@ python3Packages.buildPythonApplication {
     pydantic
     requests
     rich
-    safetensors
     tenacity
     tqdm
     transformers
@@ -62,7 +63,13 @@ python3Packages.buildPythonApplication {
   ];
 
   # Tests require `mlx` which is not supported on linux.
-  doCheck = stdenv.isDarwin;
+  doCheck = stdenv.hostPlatform.isDarwin;
+
+  passthru = {
+    updateScript = unstableGitUpdater {
+      hardcodeZeroVersion = true;
+    };
+  };
 
   meta = {
     description = "Run your own AI cluster at home with everyday devices";

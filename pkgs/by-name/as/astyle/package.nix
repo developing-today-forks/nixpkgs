@@ -1,12 +1,19 @@
-{ stdenv, lib, fetchurl, cmake, asLibrary ? false }:
+{
+  stdenv,
+  lib,
+  fetchurl,
+  cmake,
+  versionCheckHook,
+  asLibrary ? false,
+}:
 
 stdenv.mkDerivation rec {
   pname = "astyle";
-  version = "3.6.3";
+  version = "3.6.5";
 
   src = fetchurl {
     url = "mirror://sourceforge/${pname}/${pname}-${version}.tar.bz2";
-    hash = "sha256-EO18j5dOzONcF3jxYW8EypPD07/BoBeqJROWBBtnDvw=";
+    hash = "sha256-8jHNZBBHrbbAGtslEVczJqi7eik9F7VMdwVQmT3q3os=";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -21,6 +28,10 @@ stdenv.mkDerivation rec {
   postInstall = lib.optionalString asLibrary ''
     install -Dm444 ../src/astyle.h $out/include/astyle.h
   '';
+
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--version";
+  doInstallCheck = !asLibrary;
 
   meta = with lib; {
     description = "Source code indenter, formatter, and beautifier for C, C++, C# and Java";

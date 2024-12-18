@@ -51,13 +51,13 @@
   freezegun,
   # , label-studio-sdk
   mypy,
-  pytest-cov,
+  pytest-cov-stub,
   pytest-mock,
   vcrpy,
   grpcio,
 }:
 let
-  version = "0.15.14";
+  version = "0.16.11";
   optional-dependencies = {
     huggingflace = [
       langdetect
@@ -99,8 +99,8 @@ buildPythonPackage {
   src = fetchFromGitHub {
     owner = "Unstructured-IO";
     repo = "unstructured";
-    rev = "refs/tags/${version}";
-    hash = "sha256-cIMKaSKG4T832rpiJeiwftqVrcMezD9ICfislGPV/TQ=";
+    tag = version;
+    hash = "sha256-+I5eXG/ICmYPDTavDnyLlopIvoABjdDwOyfotrNs6qs=";
   };
 
   propagatedBuildInputs = [
@@ -137,7 +137,7 @@ buildPythonPackage {
     click
     freezegun
     mypy
-    pytest-cov
+    pytest-cov-stub
     pytest-mock
     vcrpy
     grpcio

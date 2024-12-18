@@ -134,6 +134,24 @@ with lib.maintainers;
     shortName = "c3d2";
   };
 
+  categorization = {
+    members = [
+      aleksana
+      fgaz
+      getpsyched
+      lyndeno
+      natsukium
+      philiptaron
+      pyrotelekinetic
+      raskin
+      sigmasquadron
+      tomodachi94
+    ];
+    githubTeams = [ "categorization" ];
+    scope = "Maintain the categorization system in Nixpkgs, per RFC 146. This team has authority over all categorization issues in Nixpkgs.";
+    shortName = "Categorization";
+  };
+
   cinnamon = {
     members = [
       bobby285271
@@ -434,13 +452,23 @@ with lib.maintainers;
     enableFeatureFreezePing = true;
   };
 
+  gnome-circle = {
+    members = [
+      aleksana
+      dawidd6
+      getchoo
+      michaelgrahamevans
+    ];
+    scope = "Maintain GNOME Circle applications.";
+    shortName = "GNOME Circle";
+  };
+
   graalvm-ce = {
     members = [
       bandresen
       hlolli
       glittershark
       ericdallo
-      thiagokokada
     ];
     scope = "Maintain GraalVM Community Edition packages.";
     shortName = "GraalVM-CE";
@@ -510,6 +538,16 @@ with lib.maintainers;
     enableFeatureFreezePing = true;
   };
 
+  jetbrains = {
+    members = [
+      edwtjo
+      leona
+      theCapypara
+    ];
+    shortName = "Jetbrains";
+    scope = "Maintainers of the Jetbrains IDEs in nixpkgs";
+  };
+
   jitsi = {
     members = [
       cleeyv
@@ -576,6 +614,7 @@ with lib.maintainers;
     members = [
       aanderse
       edwtjo
+      hrdinka
       thiagokokada
     ];
     scope = "Maintain Libretro, RetroArch and related packages.";
@@ -1076,7 +1115,6 @@ with lib.maintainers;
     members = [
       hehongbo
       lach
-      rane
       sigmasquadron
     ];
     scope = "Maintain the Xen Project Hypervisor and the related tooling ecosystem.";

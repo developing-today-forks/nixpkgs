@@ -13,13 +13,13 @@
 
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
   pname = "c3c";
-  version = "0.6.3";
+  version = "0.6.4";
 
   src = fetchFromGitHub {
     owner = "c3lang";
     repo = "c3c";
     rev = "refs/tags/v${finalAttrs.version}";
-    hash = "sha256-hFLiE1S9l2NhSIaqpYoBfn27IkhavcM0Ma31+XJtYj4=";
+    hash = "sha256-nSsNLde9jK+GgSp6DXXmD31+un7peK6t/vnzM7hZDFg=";
   };
 
   postPatch = ''
@@ -56,7 +56,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/c3lang/c3c";
     license = licenses.lgpl3Only;
     maintainers = with maintainers; [
-      luc65r
       anas
     ];
     platforms = platforms.all;

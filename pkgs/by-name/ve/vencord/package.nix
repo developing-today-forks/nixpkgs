@@ -14,13 +14,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord";
-  version = "1.10.6";
+  version = "1.10.8";
 
   src = fetchFromGitHub {
     owner = "Vendicated";
     repo = "Vencord";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-Pp8QpagTgWWHoC+e/iGfEveQYuMDDX7Oz1IAUx8cp3A=";
+    hash = "sha256-2UOz8o+3jWppk6lWatbG0avcqBFpxHYSMEspCpFWWOk=";
   };
 
   pnpmDeps = pnpm.fetchDeps {
@@ -51,8 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
       )
     );
     VENCORD_REMOTE = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
-    # TODO: somehow update this automatically
-    VENCORD_HASH = "deadbeef";
+    VENCORD_HASH = "${finalAttrs.version}";
   };
 
   buildPhase = ''

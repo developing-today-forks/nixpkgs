@@ -1,4 +1,11 @@
-{ lib, fetchFromGitHub, buildGoModule, installShellFiles, symlinkJoin, stdenv }:
+{
+  lib,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  symlinkJoin,
+  stdenv,
+}:
 
 let
   metaCommon = with lib; {
@@ -17,22 +24,25 @@ let
 
   tctl-next = buildGoModule rec {
     pname = "tctl-next";
-    version = "1.0.0";
+    version = "1.1.1";
 
     src = fetchFromGitHub {
       owner = "temporalio";
       repo = "cli";
       rev = "v${version}";
-      hash = "sha256-y0C2z2iMMQSG5+xGngZ98+ixIgbvaQxPdAWuPbEbBAY=";
+      hash = "sha256-KDJtCqx9Yp/zhutSElFveWYAKwJCckiM9k3FOtYTlLo=";
     };
 
-    vendorHash = "sha256-zhGqDHdVGg7eGnw5L3eSyXKBTjp85ir5zrtf7HbXmC0=";
+    vendorHash = "sha256-Vur3e6olkC0Ewz/RDZe2AIpcIs5GqeVgJa+KO9g8X7o=";
 
     inherit overrideModAttrs;
 
     nativeBuildInputs = [ installShellFiles ];
 
-    excludedPackages = [ "./cmd/docgen" "./tests" ];
+    excludedPackages = [
+      "./cmd/docgen"
+      "./tests"
+    ];
 
     ldflags = [
       "-s"
@@ -80,7 +90,10 @@ let
 
     excludedPackages = [ "./cmd/copyright" ];
 
-    ldflags = [ "-s" "-w" ];
+    ldflags = [
+      "-s"
+      "-w"
+    ];
 
     preCheck = ''
       export HOME="$(mktemp -d)"
@@ -101,7 +114,7 @@ let
 in
 symlinkJoin rec {
   pname = "temporal-cli";
-  inherit (tctl) version;
+  inherit (tctl-next) version;
   name = "${pname}-${version}";
 
   paths = [

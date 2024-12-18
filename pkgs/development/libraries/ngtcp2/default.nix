@@ -8,13 +8,13 @@
 
 stdenv.mkDerivation rec {
   pname = "ngtcp2";
-  version = "1.8.0";
+  version = "1.9.1";
 
   src = fetchFromGitHub {
     owner = "ngtcp2";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-AIz4wQo5NimeSEKvk741abq2q3lyWpHz0kfU/PrOyYQ=";
+    hash = "sha256-NdqmmYAqCYCm1QAqf8K22HdMd0zO3zYds2cEbJutwPA=";
     fetchSubmodules = true;
   };
 

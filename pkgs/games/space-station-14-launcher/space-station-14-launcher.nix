@@ -27,7 +27,7 @@ let
   pname = "space-station-14-launcher";
 in
 buildDotnetModule rec {
-  inherit pname;
+  inherit pname version;
 
   # Workaround to prevent buildDotnetModule from overriding assembly versions.
   name = "${pname}-${version}";
@@ -55,8 +55,7 @@ buildDotnetModule rec {
     updateScript = ./update.sh;
   };
 
-  # SDK 6.0 required for Robust.LoaderApi
-  dotnet-sdk = with dotnetCorePackages; combinePackages [ sdk_8_0 sdk_6_0 ];
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
 
   dotnetFlags = [

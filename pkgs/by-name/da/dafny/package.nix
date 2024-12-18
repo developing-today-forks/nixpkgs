@@ -4,6 +4,7 @@
 , writeScript
 , jdk11
 , z3
+, dotnetCorePackages
 }:
 
 buildDotnetModule rec {
@@ -40,7 +41,8 @@ buildDotnetModule rec {
         --replace-warn "netstandard2.0;net452" net6.0
     '';
 
-  buildInputs = [ jdk11 ];
+  dotnet-sdk = dotnetCorePackages.sdk_6_0;
+  nativeBuildInputs = [ jdk11 ];
   nugetDeps = ./deps.nix;
 
   # Build just these projects. Building Source/Dafny.sln includes a bunch of

@@ -9192,6 +9192,8 @@ self: super: with self; {
 
   nidaqmx = callPackage ../development/python-modules/nidaqmx { };
 
+  nifty8 = callPackage ../development/python-modules/nifty8 { };
+
   nikola = callPackage ../development/python-modules/nikola { };
 
   niko-home-control = callPackage ../development/python-modules/niko-home-control { };
@@ -10388,6 +10390,8 @@ self: super: with self; {
   };
 
   pixel-font-builder = callPackage ../development/python-modules/pixel-font-builder { };
+
+  pixel-font-knife = callPackage ../development/python-modules/pixel-font-knife { };
 
   pixel-ring = callPackage ../development/python-modules/pixel-ring { };
 
@@ -16206,6 +16210,10 @@ self: super: with self; {
 
   torchWithoutRocm = self.torch.override {
     rocmSupport = false;
+  };
+
+  torchWithVulkan = self.torch.override {
+    vulkanSupport = true;
   };
 
   torch-tb-profiler = callPackage ../development/python-modules/torch-tb-profiler/default.nix { };

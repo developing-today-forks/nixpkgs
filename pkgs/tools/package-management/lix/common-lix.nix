@@ -50,7 +50,6 @@ assert lib.assertMsg (
   lsof,
   mercurial,
   mdbook,
-  mdbook-linkcheck,
   nlohmann_json,
   ninja,
   openssl,
@@ -67,6 +66,7 @@ assert lib.assertMsg (
   removeReferencesTo,
   xz,
   yq,
+  zstd,
   nixosTests,
   rustPlatform,
   # Only used for versions before 2.92.
@@ -115,7 +115,7 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "lix";
 
   version = "${version}${suffix}";
-  VERSION_SUFFIX = suffix;
+  env.VERSION_SUFFIX = suffix;
 
   inherit src patches;
 
@@ -178,14 +178,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableDocumentation [
     (lib.getBin lowdown-unsandboxed)
     mdbook
-    mdbook-linkcheck
     doxygen
   ]
   ++ lib.optionals (hasDtraceSupport && withDtrace) [ systemtap-sdt ]
   ++ lib.optionals pastaFod [ passt ]
   ++ lib.optionals parseToYAML [ yq ]
   ++ lib.optionals usesCapnp [ capnproto ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ util-linuxMinimal ];
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ util-linuxMinimal ]
+  ++ lib.optionals (lib.versionAtLeast version "2.94") [ zstd ];
 
   buildInputs = [
     boost
@@ -194,7 +194,6 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     capnproto
     editline
-    libsodium
     openssl
     sqlite
     xz
@@ -293,9 +292,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++
     lib.optionals
-      (stdenv.hostPlatform.isLinux && finalAttrs.doInstallCheck && lib.versionAtLeast version "2.94")
+      (
+        stdenv.hostPlatform.isLinux
+        && finalAttrs.doInstallCheck
+        && lib.versionAtLeast version "2.94"
+        && lib.versionOlder version "2.95"
+      )
       [
         (lib.mesonOption "build-test-shell" "${pkgsStatic.busybox}/bin")
+      ]
+  ++
+    lib.optionals
+      (stdenv.hostPlatform.isLinux && finalAttrs.doInstallCheck && lib.versionAtLeast version "2.95")
+      [
+        (lib.mesonOption "build-test-env" "${pkgsStatic.busybox}/bin")
+        (lib.mesonOption "build-test-shell" "${pkgsStatic.bash}/bin")
       ];
 
   ninjaFlags = [ "-v" ];
@@ -345,7 +356,8 @@ stdenv.mkDerivation (finalAttrs: {
     rapidcheck
   ];
 
-  doInstallCheck = true;
+  # Python splices are broken (https://github.com/NixOS/nixpkgs/issues/476822), causing build failure in `buildPackages.python3Packages.bcrypt`.
+  doInstallCheck = stdenv.buildPlatform == stdenv.hostPlatform;
   mesonInstallCheckFlags = [
     "--suite=installcheck"
     "--print-errorlogs"
@@ -373,7 +385,6 @@ stdenv.mkDerivation (finalAttrs: {
   # fortify breaks the build with lto and musl for some reason
   ++ lib.optional stdenv.hostPlatform.isMusl "fortify";
 
-  # hardeningEnable = lib.optionals (!stdenv.hostPlatform.isDarwin) [ "pie" ];
   separateDebugInfo = stdenv.hostPlatform.isLinux && !enableStatic;
   enableParallelBuilding = true;
 

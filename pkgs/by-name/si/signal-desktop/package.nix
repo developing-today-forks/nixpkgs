@@ -1,9 +1,11 @@
 {
   stdenv,
   lib,
-  nodejs_22,
-  pnpm_10,
-  electron_38,
+  nodejs_24,
+  pnpm_10_29_2,
+  fetchPnpmDeps,
+  pnpmConfigHook,
+  electron_40,
   python3,
   makeWrapper,
   callPackage,
@@ -11,6 +13,7 @@
   jq,
   makeDesktopItem,
   copyDesktopItems,
+  xcodebuild,
   replaceVars,
   noto-fonts-color-emoji,
   nixosTests,
@@ -21,9 +24,9 @@
   withAppleEmojis ? false,
 }:
 let
-  nodejs = nodejs_22;
-  pnpm = pnpm_10.override { inherit nodejs; };
-  electron = electron_38;
+  nodejs = nodejs_24;
+  pnpm = pnpm_10_29_2;
+  electron = electron_40;
 
   libsignal-node = callPackage ./libsignal-node.nix { inherit nodejs; };
   signal-sqlcipher = callPackage ./signal-sqlcipher.nix { inherit pnpm nodejs; };
@@ -52,13 +55,13 @@ let
     '';
   });
 
-  version = "7.76.0";
+  version = "8.1.0";
 
   src = fetchFromGitHub {
     owner = "signalapp";
     repo = "Signal-Desktop";
     tag = "v${version}";
-    hash = "sha256-zwywpQ/1LYSofXPMLtYt7c0PLlzgNedRGqslPJur61g=";
+    hash = "sha256-pxylCBDEHOxcJeo/117661UMHSIKS7NSVJhwU48hPiA=";
   };
 
   sticker-creator = stdenv.mkDerivation (finalAttrs: {
@@ -66,16 +69,18 @@ let
     inherit version;
     src = src + "/sticker-creator";
 
-    pnpmDeps = pnpm.fetchDeps {
+    pnpmDeps = fetchPnpmDeps {
       inherit (finalAttrs) pname src version;
-      fetcherVersion = 1;
-      hash = "sha256-WUwclz7dJl+s5zRjWu/HTJ5eZroAFA6vR8mZzwib6Po=";
+      inherit pnpm;
+      fetcherVersion = 3;
+      hash = "sha256-WbdYcI5y01gdS9AIzy4VZZ6eFaTHaVPscTawLSsHzlc=";
     };
 
     strictDeps = true;
     nativeBuildInputs = [
       nodejs
-      pnpm.configHook
+      pnpmConfigHook
+      pnpm
     ];
 
     buildPhase = ''
@@ -98,15 +103,24 @@ stdenv.mkDerivation (finalAttrs: {
   strictDeps = true;
   nativeBuildInputs = [
     nodejs
-    pnpm.configHook
+    pnpmConfigHook
+    pnpm
     makeWrapper
-    copyDesktopItems
     python3
     jq
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    xcodebuild
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    copyDesktopItems
   ];
   buildInputs = (lib.optional (!withAppleEmojis) noto-fonts-color-emoji-png);
 
-  patches = lib.optional (!withAppleEmojis) (
+  patches = [
+    ./force-90-days-expiration.patch
+  ]
+  ++ lib.optional (!withAppleEmojis) (
     replaceVars ./replace-apple-emoji-with-noto-emoji.patch {
       noto-emoji-pngs = "${noto-fonts-color-emoji-png}/share/noto-fonts-color-emoji-png";
     }
@@ -120,29 +134,48 @@ stdenv.mkDerivation (finalAttrs: {
     # resource if the nixpkgs version is different. To fix this we hardcode
     # the electron version to the declared one here instead of interpolating
     # it at runtime.
-    substituteInPlace app/updateDefaultSession.ts \
+    substituteInPlace app/updateDefaultSession.main.ts \
       --replace-fail "\''${process.versions.electron}" "`jq -r '.devDependencies.electron' < package.json`"
+
+    # https://github.com/signalapp/Signal-Desktop/issues/7667
+    substituteInPlace ts/util/version.std.ts \
+      --replace-fail 'isAdhoc(version)' 'true'
+
+    # Nix builds do not need upstream release hooks (notarization and
+    # language-pack postprocessing), and they expect a different macOS
+    # app layout than nixpkgs' Electron provides.
+    substituteInPlace package.json \
+      --replace-fail '"artifactBuildCompleted": "ts/scripts/artifact-build-completed.node.js",' "" \
+      --replace-fail '"afterSign": "ts/scripts/after-sign.node.js",' "" \
+      --replace-fail '"afterPack": "ts/scripts/after-pack.node.js",' "" \
+      --replace-fail '"sign": "./ts/scripts/sign-macos.node.js",' "" \
+      --replace-fail '"afterAllArtifactBuild": "ts/scripts/after-all-artifact-build.node.js",' ""
   '';
 
-  pnpmDeps = pnpm.fetchDeps {
+  pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs)
       pname
       version
       src
       patches
       ;
-    fetcherVersion = 1;
+    inherit pnpm;
+    fetcherVersion = 3;
     hash =
       if withAppleEmojis then
-        "sha256-b13di3TdaS6CT8gAZfBqlu4WheIHL+X8LvAo148H8kI="
+        "sha256-XYLpn4yXEF0xBM2XkgeeGBCDQZepLvKwDJunbefq3XU="
       else
-        "sha256-/Yy9R+MRN5e5vGU0XgwJa7oFpHn8bi8B0y89aaT2LQI=";
+        "sha256-f0aOXmjw/RtQ70qQjwuGxRxhsFMk1jaqGr2Y1YOpMGg=";
   };
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     SIGNAL_ENV = "production";
-    SOURCE_DATE_EPOCH = 1761172657;
+    SOURCE_DATE_EPOCH = 1772664318;
+  }
+  // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # Disable code signing during local macOS builds.
+    CSC_IDENTITY_AUTO_DISCOVERY = "false";
   };
 
   preBuild = ''
@@ -187,6 +220,15 @@ stdenv.mkDerivation (finalAttrs: {
 
     rm -r node_modules/@signalapp/sqlcipher
     cp -r ${signal-sqlcipher} node_modules/@signalapp/sqlcipher
+
+    # fs-xattr is required at runtime by preload.wrapper.js,
+    # but with npmRebuild disabled its native binding is missing.
+    # Build it explicitly against Electron headers ahead of packaging.
+    export npm_config_nodedir=${electron.headers}
+    pushd node_modules/fs-xattr
+    pnpm exec node-gyp rebuild
+    popd
+    test -f node_modules/fs-xattr/build/Release/xattr.node
   '';
 
   buildPhase = ''
@@ -199,18 +241,29 @@ stdenv.mkDerivation (finalAttrs: {
 
     pnpm run generate
     pnpm exec electron-builder \
-      --linux "dir:${stdenv.hostPlatform.node.arch}" \
+      ${
+        if stdenv.hostPlatform.isDarwin then "--mac" else "--linux"
+      } "dir:${stdenv.hostPlatform.node.arch}" \
       --config.extraMetadata.environment=$SIGNAL_ENV \
       -c.electronDist=electron-dist \
-      -c.electronVersion=${electron.version}
+      -c.electronVersion=${electron.version} \
+      -c.npmRebuild=false \
+      ${lib.optionalString stdenv.hostPlatform.isDarwin "-c.mac.identity=null"}
 
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
-
-    mkdir -p $out/share/
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mkdir -p $out/{Applications,bin}
+    cp -r dist/mac*/Signal.app $out/Applications
+    makeWrapper "$out/Applications/Signal.app/Contents/MacOS/Signal" "$out/bin/signal-desktop" \
+      --add-flags ${lib.escapeShellArg commandLineArgs}
+  ''
+  + lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+    mkdir -p $out/share
     cp -r dist/*-unpacked/resources $out/share/signal-desktop
 
     for icon in build/icons/png/*
@@ -223,7 +276,8 @@ stdenv.mkDerivation (finalAttrs: {
       --set-default ELECTRON_FORCE_IS_PACKAGED 1 \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}" \
       --add-flags ${lib.escapeShellArg commandLineArgs}
-
+  ''
+  + ''
     runHook postInstall
   '';
 
@@ -262,7 +316,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    description = "Private, simple, and secure messenger (nixpkgs build)";
+    description = "Private, simple, and secure messenger";
     longDescription = ''
       Signal Desktop is an Electron application that links with your
       "Signal Android" or "Signal iOS" app.
@@ -279,6 +333,8 @@ stdenv.mkDerivation (finalAttrs: {
       ]
       ++ lib.optional withAppleEmojis unfree;
     maintainers = with lib.maintainers; [
+      eclairevoyant
+      iamanaws
       marcin-serwin
       teutat3s
     ];
@@ -286,6 +342,8 @@ stdenv.mkDerivation (finalAttrs: {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
     ];
   };
 })

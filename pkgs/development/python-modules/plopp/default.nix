@@ -2,6 +2,7 @@
   lib,
   buildPythonPackage,
   fetchFromGitHub,
+  pythonAtLeast,
 
   # build-system
   setuptools,
@@ -33,16 +34,16 @@
   fetchurl,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "plopp";
-  version = "25.10.0";
+  version = "26.2.1";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
     repo = "plopp";
-    tag = version;
-    hash = "sha256-b9f08Wf6SGNb2rTnOqZhsSvRcfg1T+JXItZa67q2vtM=";
+    tag = finalAttrs.version;
+    hash = "sha256-31F6hVrVRNdvzAEifdeNsa5B52D/VtNWn4F9qUcSKJ0=";
   };
 
   build-system = [
@@ -71,6 +72,12 @@ buildPythonPackage rec {
     scipp
     scipy
     xarray
+  ];
+
+  disabledTests = lib.optionals (pythonAtLeast "3.14") [
+    # RuntimeError: There is no current event loop in thread 'MainThread'
+    "test_move_cut"
+    "test_value_cuts"
   ];
 
   env = {
@@ -114,4 +121,4 @@ buildPythonPackage rec {
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
   };
-}
+})

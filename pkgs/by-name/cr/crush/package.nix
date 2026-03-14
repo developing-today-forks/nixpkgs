@@ -1,32 +1,24 @@
 {
   lib,
-  buildGo125Module,
+  buildGo126Module,
   fetchFromGitHub,
   nix-update-script,
   writableTmpDirAsHomeHook,
   versionCheckHook,
 }:
 
-buildGo125Module (finalAttrs: {
+buildGo126Module (finalAttrs: {
   pname = "crush";
-  version = "0.12.1";
+  version = "0.47.2";
 
   src = fetchFromGitHub {
     owner = "charmbracelet";
     repo = "crush";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-uESS76cPJ/sYGbsTpaUKlF8g0y2+LYbF4zd7dAoKWWU=";
+    hash = "sha256-Lmp2DYrlzxVnll9x1jcnw/QgYjhA9RHpciQZ7mAUK5Y=";
   };
 
-  vendorHash = "sha256-lqoAPp8EW2tW+QjwCuBgxZDbKT3XMvP3qwx/yES1mx4=";
-
-  # rename TestMain to prevent it from running, as it panics in the sandbox.
-  postPatch = ''
-    substituteInPlace internal/llm/provider/openai_test.go \
-      --replace-fail \
-        "func TestMain" \
-        "func DisabledTestMain"
-  '';
+  vendorHash = "sha256-pBZdmQRnPfvhz66+DGQx/ZMMiYeKBfWThybw4RXsjno=";
 
   ldflags = [
     "-s"
@@ -37,6 +29,7 @@ buildGo125Module (finalAttrs: {
     let
       # these tests fail in the sandbox
       skippedTests = [
+        "TestCoderAgent"
         "TestOpenAIClientStreamChoices"
         "TestGrepWithIgnoreFiles"
         "TestSearchImplementations"
@@ -49,7 +42,6 @@ buildGo125Module (finalAttrs: {
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   updateScript = nix-update-script { };
@@ -59,7 +51,11 @@ buildGo125Module (finalAttrs: {
     homepage = "https://github.com/charmbracelet/crush";
     changelog = "https://github.com/charmbracelet/crush/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.fsl11Mit;
-    maintainers = with lib.maintainers; [ x123 ];
+    maintainers = with lib.maintainers; [
+      x123
+      malik
+      davinci42
+    ];
     mainProgram = "crush";
   };
 })

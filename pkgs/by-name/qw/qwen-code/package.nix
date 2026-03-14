@@ -1,6 +1,7 @@
 {
   lib,
   buildNpmPackage,
+  nodejs_22,
   fetchFromGitHub,
   nix-update-script,
   jq,
@@ -13,16 +14,20 @@
 
 buildNpmPackage (finalAttrs: {
   pname = "qwen-code";
-  version = "0.1.1";
+  version = "0.10.5";
 
   src = fetchFromGitHub {
     owner = "QwenLM";
     repo = "qwen-code";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-AciiXcSbRWZJ8+79h8Np2DphzUvxoJ1krsXw4rZxv/E=";
+    hash = "sha256-k6o8X98f7zMgB5gsw1cX8rfxE88LTgz5qgDTZ+rLeMA=";
   };
 
-  npmDepsHash = "sha256-MKpfLzmWIATAPEf8USr2ZJR8ZGTWKkdlXuA4ByYW/jg=";
+  npmDepsHash = "sha256-L5Ga/TZ1dhlZWx9cCk988dIax4w92B2L4uviUSsgn1c=";
+
+  # npm 11 incompatible with fetchNpmDeps
+  # https://github.com/NixOS/nixpkgs/issues/474535
+  nodejs = nodejs_22;
 
   nativeBuildInputs = [
     jq

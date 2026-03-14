@@ -9,10 +9,10 @@
 }:
 let
   pname = "beeper";
-  version = "4.1.253";
+  version = "4.2.605";
   src = fetchurl {
-    url = "https://beeper-desktop.download.beeper.com/builds/Beeper-${version}.AppImage";
-    hash = "sha256-/vjJmDP183M8B/g0IIcWytB5NUoteWMZlef0j8nZdOQ=";
+    url = "https://beeper-desktop.download.beeper.com/builds/Beeper-${version}-x86_64.AppImage";
+    hash = "sha256-c+ISP/6kWR7RMV55LR8Ap4CIn9y1h6Vo9A92+7tpVL8=";
   };
   appimageContents = appimageTools.extract {
     inherit pname version src;
@@ -23,7 +23,7 @@ let
       echo "export function registerLinuxConfig() {}" > $linuxConfigFilename
 
       # disable auto update
-      sed -i 's/[^=]*\.auto_update_disabled/true/' $out/resources/app/build/main/main-entry-*.mjs
+      sed -i 's/auto_update_disabled:[^,}]*/auto_update_disabled:true/g' $out/resources/app/build/main/main-entry-*.mjs
 
       # prevent updates
       sed -i -E 's/executeDownload\([^)]+\)\{/executeDownload(){return;/g' $out/resources/app/build/main/main-entry-*.mjs
@@ -48,7 +48,8 @@ appimageTools.wrapAppImage {
     . ${makeWrapper}/nix-support/setup-hook
     wrapProgram $out/bin/beeper \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}} --no-update" \
-      --set APPIMAGE beeper
+      --set APPIMAGE beeper \
+      --run 'exec >/dev/null' # as recommended in #486164
   '';
 
   passthru = {
@@ -70,7 +71,7 @@ appimageTools.wrapAppImage {
     inherit src;
   };
 
-  meta = with lib; {
+  meta = {
     description = "Universal chat app";
     longDescription = ''
       Beeper is a universal chat app. With Beeper, you can send
@@ -78,10 +79,9 @@ appimageTools.wrapAppImage {
       many different chat networks.
     '';
     homepage = "https://beeper.com";
-    license = licenses.unfree;
-    maintainers = with maintainers; [
+    license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [
       jshcmpbll
-      edmundmiller
       zh4ngx
     ];
     platforms = [ "x86_64-linux" ];

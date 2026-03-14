@@ -6,34 +6,37 @@
 
   nodejs,
   pnpm_9,
+  fetchPnpmDeps,
+  pnpmConfigHook,
 }:
-
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "openlist-frontend";
-  version = "4.1.5";
+  version = "4.1.10";
 
   src = fetchFromGitHub {
     owner = "OpenListTeam";
     repo = "OpenList-Frontend";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-J/6ZebKn7z5oagXF8in4PX9kMbdzBtqiwOgQdznYNzM=";
+    hash = "sha256-V8nfQsGLhd7eERF0/ly3sRdGmffYa9r6GhtjciOXxMU=";
   };
 
   i18n = fetchzip {
     url = "https://github.com/OpenListTeam/OpenList-Frontend/releases/download/v${finalAttrs.version}/i18n.tar.gz";
-    hash = "sha256-rpLHflA5EHxmc2ST0AhDnFOXbI5aE4jdedHOEFZ9+RY=";
+    hash = "sha256-VdNqXdLXs2n/ikUDm1YQRNAXqYqFjMWRGLPRpmJVoaI=";
     stripRoot = false;
   };
 
   nativeBuildInputs = [
     nodejs
-    pnpm_9.configHook
+    pnpmConfigHook
+    pnpm_9
   ];
 
-  pnpmDeps = pnpm_9.fetchDeps {
+  pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
+    pnpm = pnpm_9;
     fetcherVersion = 2;
-    hash = "sha256-Ge+uwFGvEtRgYf5zkwYbNfBONXoVxlw4pmu25nY4HTc=";
+    hash = "sha256-xylF+Z7Fkx/bFYPlzqfGrl051ZLKzPgdlF7U8vKtQq8=";
   };
 
   buildPhase = ''

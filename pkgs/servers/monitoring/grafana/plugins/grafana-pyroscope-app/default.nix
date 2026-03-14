@@ -2,12 +2,12 @@
 
 grafanaPlugin {
   pname = "grafana-pyroscope-app";
-  version = "1.10.1";
-  zipHash = "sha256-Q9dzJGXLKGVVDwDF/D4FkrZb4ri6RmUW7usB7eYXcBo=";
-  meta = with lib; {
+  version = "1.17.0";
+  zipHash = "sha256-C8c4d74fWn6kKM8OR5bYRVbPHKFXzDLzLomJVjPChno=";
+  meta = {
     description = "Integrate seamlessly with Pyroscope, the open-source continuous profiling platform, providing a smooth, query-less experience for browsing and analyzing profiling data";
-    license = licenses.agpl3Only;
-    teams = [ lib.teams.fslabs ];
-    platforms = platforms.unix;
+    license = lib.licenses.agpl3Only;
+    maintainers = with lib.maintainers; [ lpostula ];
+    platforms = lib.platforms.unix;
   };
 }

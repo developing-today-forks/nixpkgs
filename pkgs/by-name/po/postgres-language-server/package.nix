@@ -1,29 +1,31 @@
 {
   lib,
   rustPlatform,
-  fetchgit,
+  fetchFromGitHub,
   rust-jemalloc-sys,
   tree-sitter,
   nodejs,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "postgres-language-server";
-  version = "0.16.1";
+  version = "0.21.0";
 
-  src = fetchgit {
-    url = "https://github.com/supabase-community/postgres-language-server";
+  src = fetchFromGitHub {
+    owner = "supabase-community";
+    repo = "postgres-language-server";
     tag = finalAttrs.version;
-    hash = "sha256-zdFgfZ9GtZObn839kkAIT71bBt7YHs28qkAWlp3k7kw=";
+    hash = "sha256-E5HRNT4q0RJRJ5PW7uvvrni6jdBZYQCeEWgo0i/fmBQ=";
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-psgo5/tDHaQd0dkiD/3uhrKuxlOBLi/xG4x3gVPLZbw=";
+  cargoHash = "sha256-JRWe0D+H9MhVDva5rY8iRr/icLbVYGMjbwa3KSAori4=";
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
 
     # Required to build the custom tree-sitter grammar
-    # https://github.com/supabase-community/postgres-language-server/blob/main/crates/pgt_treesitter_grammar/grammar.js
+    # https://github.com/supabase-community/postgres-language-server/blob/main/crates/pgls_treesitter_grammar/grammar.js
     tree-sitter
     nodejs
   ];
@@ -37,24 +39,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     # As specified in the upstream: https://github.com/supabase-community/postgres-language-server/blob/main/.github/workflows/release.yml
     RUSTFLAGS = "-C strip=symbols -C codegen-units=1";
-    PGT_VERSION = finalAttrs.version;
+    PGLS_VERSION = finalAttrs.version;
   };
 
-  cargoBuildFlags = [ "-p=pgt_cli" ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
-  checkFlags = [
-    # Tries to write to the file system relatively to the current path
-    "--skip=syntax_error"
-    # Requires a database connection
-    "--skip=test_cli_check_command"
+  cargoBuildFlags = [ "-p=pgls_cli" ];
+  # Many tests are integration tests requiring a running Postgres instance
+  doCheck = false;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
+  doInstallCheck = true;
 
   meta = {
     description = "Tools and language server for Postgres";
     homepage = "https://pg-language-server.com";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
-      figsoda
       myypo
     ];
     mainProgram = "postgres-language-server";

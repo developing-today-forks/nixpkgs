@@ -40,8 +40,8 @@
   systemd,
   unixODBC,
   wrapGAppsHook3,
-  wxGTK32,
-  xorg,
+  wxwidgets_3_2,
+  libx11,
   zlib,
 }:
 let
@@ -53,13 +53,13 @@ let
 
   wxPackages2 =
     if stdenv.hostPlatform.isDarwin then
-      [ wxGTK32 ]
+      [ wxwidgets_3_2 ]
     else
       [
         libGL
         libGLU
-        wxGTK32
-        xorg.libX11
+        wxwidgets_3_2
+        libx11
         wrapGAppsHook3
       ];
 
@@ -164,6 +164,7 @@ stdenv.mkDerivation {
     homepage = "https://www.erlang.org/";
     downloadPage = "https://www.erlang.org/download.html";
     description = "Programming language used for massively scalable soft real-time systems";
+    changelog = "https://github.com/erlang/otp/releases/tag/OTP-${version}";
 
     longDescription = ''
       Erlang is a programming language used to build massively scalable

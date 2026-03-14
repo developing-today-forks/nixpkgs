@@ -11,13 +11,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "protoc-gen-swift";
-  version = "1.32.0";
+  version = "1.34.1";
 
   src = fetchFromGitHub {
     owner = "apple";
     repo = "swift-protobuf";
     rev = "${finalAttrs.version}";
-    hash = "sha256-YirKJjEA5zFVVs8U1/D3TYCgv+3FMO7dusCZ7ZuIeZs=";
+    hash = "sha256-DnnDT4egw00tvy84PuyvSKINjVwueg7QRSQrwD81qbg=";
   };
 
   nativeBuildInputs = [
@@ -31,12 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     swiftPackages.Dispatch
   ];
 
-  # swiftpm fails to found libdispatch.so on Linux
-  LD_LIBRARY_PATH = lib.optionalString stdenv.hostPlatform.isLinux (
-    lib.makeLibraryPath [
+  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    # swiftpm fails to found libdispatch.so on Linux
+    LD_LIBRARY_PATH = lib.makeLibraryPath [
       swiftPackages.Dispatch
-    ]
-  );
+    ];
+  };
 
   installPhase = ''
     runHook preInstall

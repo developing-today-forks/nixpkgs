@@ -24,7 +24,7 @@ let
   broken = addMetaAttrs { broken = true; };
   brokenOnDarwin = addMetaAttrs { broken = stdenv.hostPlatform.isDarwin; };
   addToCscOptions = opt: old: {
-    CSC_OPTIONS = lib.concatStringsSep " " ([ old.CSC_OPTIONS or "" ] ++ lib.toList opt);
+    env.CSC_OPTIONS = lib.concatStringsSep " " ([ old.env.CSC_OPTIONS or "" ] ++ lib.toList opt);
   };
 in
 {
@@ -71,7 +71,7 @@ in
     };
   ezxdisp =
     old:
-    (addToBuildInputsWithPkgConfig pkgs.xorg.libX11 old)
+    (addToBuildInputsWithPkgConfig pkgs.libx11 old)
     // {
       env.NIX_CFLAGS_COMPILE = toString [
         "-Wno-error=implicit-function-declaration"
@@ -98,7 +98,6 @@ in
       ] old
     )
     // (addToBuildInputs pkgs.libglut old);
-  iconv = addToBuildInputs (lib.optional stdenv.hostPlatform.isDarwin pkgs.libiconv);
   icu = addToBuildInputsWithPkgConfig pkgs.icu;
   imlib2 = addToBuildInputsWithPkgConfig pkgs.imlib2;
   inotify =
@@ -194,7 +193,7 @@ in
     );
   uuid-lib = addToBuildInputs pkgs.libuuid;
   ws-client = addToBuildInputs pkgs.zlib;
-  xlib = addToPropagatedBuildInputs pkgs.xorg.libX11;
+  xlib = addToPropagatedBuildInputs pkgs.libx11;
   yaml = addToBuildInputs pkgs.libyaml;
   zlib = addToBuildInputs pkgs.zlib;
   zmq = addToBuildInputs pkgs.zeromq;
@@ -266,6 +265,7 @@ in
         --replace-quiet 'only chicken.base' 'only chicken.base define-values'
     '';
   };
+  raylib = addToBuildInputsWithPkgConfig pkgs.raylib;
   socket = old: {
     # chicken-do checks for changes to a file that doesn't exist
     preBuild = ''
@@ -285,10 +285,10 @@ in
         chickenEggs.foreigners
       ];
     };
-  ephem = broken;
   canvas-draw = broken;
   coops-utils = broken;
   crypt = broken;
+  ephem = addToBuildInputs pkgs.libnova;
   gemini = broken;
   gemini-client = broken;
   hypergiant = broken;
@@ -296,8 +296,13 @@ in
   kiwi = broken;
   lmdb-ht = broken;
   mpi = broken;
+  oauthtoothy = broken;
   pyffi = broken;
   qt-light = broken;
+  schematra-csrf = broken;
+  schematra-session = broken;
+  srfi-174 = broken;
+  srfi-19 = broken;
   sundials = broken;
   svn-client = broken;
   tokyocabinet = broken;
@@ -306,6 +311,8 @@ in
 
   # mark broken darwin
 
+  # The last successful Darwin Hydra build was in 2024
+  iconv = brokenOnDarwin;
   # fatal error: 'mqueue.h' file not found
   posix-mq = brokenOnDarwin;
   # Undefined symbols for architecture arm64: "_pthread_setschedprio"

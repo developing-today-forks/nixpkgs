@@ -4,12 +4,12 @@
   fetchCrate,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hayagriva";
   version = "0.9.1";
 
   src = fetchCrate {
-    inherit pname version;
+    inherit (finalAttrs) pname version;
     hash = "sha256-9PGo/TPk5QuiVoa5wUGyHufW/VaxqhinxS+u2JMPZBY=";
   };
 
@@ -29,12 +29,12 @@ rustPlatform.buildRustPackage rec {
   meta = {
     description = "Work with references: Literature database management, storage, and citation formatting";
     homepage = "https://github.com/typst/hayagriva";
-    changelog = "https://github.com/typst/hayagriva/releases/tag/v${version}";
+    changelog = "https://github.com/typst/hayagriva/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [
       asl20
       mit
     ];
-    maintainers = with lib.maintainers; [ figsoda ];
+    maintainers = [ ];
     mainProgram = "hayagriva";
   };
-}
+})

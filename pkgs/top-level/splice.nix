@@ -106,25 +106,7 @@ let
         ;
     };
 
-  splicedPackagesWithXorg =
-    splicedPackages
-    // removeAttrs splicedPackages.xorg [
-      "callPackage"
-      "newScope"
-      "overrideScope"
-      "packages"
-    ];
-
-  packagesWithXorg =
-    pkgs
-    // removeAttrs pkgs.xorg [
-      "callPackage"
-      "newScope"
-      "overrideScope"
-      "packages"
-    ];
-
-  pkgsForCall = if actuallySplice then splicedPackagesWithXorg else packagesWithXorg;
+  pkgsForCall = if actuallySplice then splicedPackages else pkgs;
 
 in
 
@@ -132,13 +114,15 @@ in
   inherit splicePackages;
 
   # We use `callPackage' to be able to omit function arguments that can be
-  # obtained `pkgs` or `buildPackages` and their `xorg` package sets. Use
-  # `newScope' for sets of packages in `pkgs' (see e.g. `gnome' below).
+  # obtained from `pkgs` or `buildPackages`.
+  # Use `newScope' for sets of packages in `pkgs' (see e.g. `gnome' below).
   callPackage = pkgs.newScope { };
 
   callPackages = lib.callPackagesWith pkgsForCall;
 
   newScope = extra: lib.callPackageWith (pkgsForCall // extra);
+
+  pkgs = if actuallySplice then splicedPackages // { recurseForDerivations = false; } else pkgs;
 
   # prefill 2 fields of the function for convenience
   makeScopeWithSplicing = lib.makeScopeWithSplicing splicePackages pkgs.newScope;

@@ -7,29 +7,28 @@
   nix-update-script,
   pkg-config,
   rustPlatform,
-  solc,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "foundry";
-  version = "1.4.3";
+  version = "1.5.1";
 
   src = fetchFromGitHub {
     owner = "foundry-rs";
     repo = "foundry";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-SrkFfc9+cb3nDqEOj3gRkQq9aKOSfk3s7a3EGka5ACw=";
+    hash = "sha256-dMYuv5noIn86WuUJkUixnoNGLgByacung/TBU+EYhUw=";
   };
 
-  cargoHash = "sha256-PoPfuMNeK6ArZddBd0lsR2r8UrvRieqkxYZ8jCCxw5o=";
+  cargoHash = "sha256-+5RLCkAQR8UepdUIsq1FnQmjKMg7YNC1Sxu0CVpWcnc=";
 
   nativeBuildInputs = [
     pkg-config
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ];
 
-  buildInputs = [ solc ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ libusb1 ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libusb1 ];
 
   # Tests are run upstream, and many perform I/O
   # incompatible with the nix build sandbox.
@@ -39,7 +38,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     versionCheckHook
   ];
   versionCheckProgram = "${placeholder "out"}/bin/forge";
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };

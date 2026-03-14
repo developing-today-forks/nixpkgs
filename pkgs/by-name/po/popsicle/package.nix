@@ -50,7 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
 
   meta = {
     description = "Multiple USB File Flasher";
@@ -58,7 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/pop-os/popsicle/releases/tag/${finalAttrs.version}";
     maintainers = with lib.maintainers; [
       _13r0ck
-      figsoda
     ];
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;

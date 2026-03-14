@@ -7,18 +7,21 @@
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "pycync";
-  version = "0.4.2";
+  version = "0.5.0";
   pyproject = true;
+
+  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "Kinachi249";
     repo = "pycync";
     tag = "v${version}";
-    hash = "sha256-PDCS+ucfO5RRvTshGGjxir3ez7L405k5tL5svMxZMsg=";
+    hash = "sha256-mYHUkenP0FMnwKOdZe4XjC/VnP3JJGPtuVdYR9UcouM=";
   };
 
   build-system = [ hatchling ];

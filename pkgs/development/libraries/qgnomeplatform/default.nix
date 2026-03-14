@@ -36,6 +36,9 @@ stdenv.mkDerivation rec {
     # Backport cursor fix for Qt6 apps
     # Adjusted from https://github.com/FedoraQt/QGnomePlatform/pull/138
     ./qt6-cursor-fix.patch
+
+    # fixing build with Qt>=6.10
+    ./qt6_10.patch
   ];
 
   nativeBuildInputs = [
@@ -74,11 +77,11 @@ stdenv.mkDerivation rec {
     updateScript = nix-update-script { };
   };
 
-  meta = with lib; {
+  meta = {
     description = "QPlatformTheme for a better Qt application inclusion in GNOME";
     homepage = "https://github.com/FedoraQt/QGnomePlatform";
-    license = licenses.lgpl21Plus;
+    license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
-    platforms = platforms.linux;
+    platforms = lib.platforms.linux;
   };
 }

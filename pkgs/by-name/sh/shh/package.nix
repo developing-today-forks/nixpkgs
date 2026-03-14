@@ -18,16 +18,16 @@ let
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "shh";
-  version = "2025.10.22";
+  version = "2026.1.27";
 
   src = fetchFromGitHub {
     owner = "desbma";
     repo = "shh";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-OxiQOwoWytZvPVVurSckPSWcb88pyDHRdUV/87Dbb9Q=";
+    hash = "sha256-RGxxpAr8E2KriwheWXcsxRRBhZST27Xp6LSdgzxsuUM=";
   };
 
-  cargoHash = "sha256-KRRBqRm6/TedzjGRTcbj0q4R9xOgj0PmKEm9rY2f4PM=";
+  cargoHash = "sha256-GjUu7QDLMs/E4l3tjMBqmfoGkdQJMzdM/Ovg04pIctU=";
 
   patches = [
     ./fix_run_checks.patch
@@ -85,9 +85,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     installManPage target/mangen/*
 
-    installShellCompletion --cmd ${finalAttrs.pname} \
-      target/shellcomplete/${finalAttrs.pname}.{bash,fish} \
-      --zsh target/shellcomplete/_${finalAttrs.pname}
+    installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
+      target/shellcomplete/${finalAttrs.meta.mainProgram}.{bash,fish} \
+      --zsh target/shellcomplete/_${finalAttrs.meta.mainProgram}
   '';
 
   # RUST_BACKTRACE = 1;

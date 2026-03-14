@@ -7,18 +7,18 @@
   versionCheckHook,
 }:
 
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "tbls";
-  version = "1.91.1";
+  version = "1.92.3";
 
   src = fetchFromGitHub {
     owner = "k1LoW";
     repo = "tbls";
-    tag = "v${version}";
-    hash = "sha256-H0gL8EDJLIUhW5zV57zmWs2VU21GmqyKNTqB6AiXrKk=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-/1yulnT+HDZGO8S8xk59sKXxoFaw5Hoa1XXAwp5z7eM=";
   };
 
-  vendorHash = "sha256-HE3/h77APsNRitAAo4R/5tWrX36IPcJRAUFv6M6P6x4=";
+  vendorHash = "sha256-DnXftqcjk2fKWytmqdg9eWjsofaOTsHOpxTeIbXqMlw=";
 
   excludedPackages = [ "scripts/jsonschema" ];
 
@@ -32,7 +32,7 @@ buildGoModule rec {
     "-w"
   ];
 
-  CGO_CFLAGS = [ "-Wno-format-security" ];
+  env.CGO_CFLAGS = toString [ "-Wno-format-security" ];
 
   preCheck = ''
     # Remove tests that require additional services.
@@ -55,9 +55,9 @@ buildGoModule rec {
   meta = {
     description = "Tool to generate documentation based on a database structure";
     homepage = "https://github.com/k1LoW/tbls";
-    changelog = "https://github.com/k1LoW/tbls/blob/${src.rev}/CHANGELOG.md";
+    changelog = "https://github.com/k1LoW/tbls/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ azahi ];
     mainProgram = "tbls";
   };
-}
+})

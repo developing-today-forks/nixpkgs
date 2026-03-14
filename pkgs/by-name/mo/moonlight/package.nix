@@ -1,8 +1,10 @@
 {
   lib,
   stdenv,
-  pnpm_10,
-  nodejs_22,
+  pnpm,
+  fetchPnpmDeps,
+  pnpmConfigHook,
+  nodejs,
   fetchFromGitHub,
   nix-update-script,
   discord,
@@ -12,27 +14,25 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "moonlight";
-  version = "1.3.32";
+  version = "2026.3.1";
 
   src = fetchFromGitHub {
     owner = "moonlight-mod";
     repo = "moonlight";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-aXap/wUjjJTCy2eq7p7BL6ZYOVZEBVY4/YkrDtbIj2Q=";
+    hash = "sha256-v4GAFP5cN9UXzqG+JVGlqnTQBKyXB2/cUXiOvleuFDE=";
   };
 
   nativeBuildInputs = [
-    nodejs_22
-    pnpm_10.configHook
+    nodejs
+    pnpmConfigHook
+    pnpm
   ];
 
-  pnpmDeps = pnpm_10.fetchDeps {
+  pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-
-    buildInputs = [ nodejs_22 ];
-
-    fetcherVersion = 2;
-    hash = "sha256-gv+PHGbo0IiPgcxi0RAvsNmGLHWZar3SB4eW7NbJRJY=";
+    fetcherVersion = 3;
+    hash = "sha256-1jGEzTPPlwAFDKPbH92HvYg4rzFrUJLqhZRMNS+H6GI=";
   };
 
   env = {
@@ -68,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     );
   };
 
-  meta = with lib; {
+  meta = {
     description = "Discord client modification, focused on enhancing user and developer experience";
     longDescription = ''
       Moonlight is a ***passion project***—yet another Discord client mod—focused on providing a decent user
@@ -79,10 +79,11 @@ stdenv.mkDerivation (finalAttrs: {
     downloadPage = "https://moonlight-mod.github.io/using/install/#nix";
     changelog = "https://raw.githubusercontent.com/moonlight-mod/moonlight/refs/tags/v${finalAttrs.version}/CHANGELOG.md";
 
-    license = licenses.lgpl3;
-    maintainers = with maintainers; [
+    license = lib.licenses.lgpl3;
+    maintainers = with lib.maintainers; [
       ilys
       FlameFlag
+      isabelroses
     ];
   };
 })

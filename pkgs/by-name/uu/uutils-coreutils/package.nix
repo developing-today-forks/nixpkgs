@@ -21,24 +21,24 @@ assert selinuxSupport -> lib.meta.availableOn stdenv.hostPlatform libselinux;
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "uutils-coreutils";
-  version = "0.3.0";
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "uutils";
     repo = "coreutils";
     tag = finalAttrs.version;
-    hash = "sha256-qvHNV3oy89CVR4LtrxFQJpev3yhHXy2Fh5PTik7Eo8g=";
+    hash = "sha256-mS1KjnMUQzRqsmy1GCLDlDh2kOSfPhc59RnR9abqtu4=";
   };
+
+  # error: linker `aarch64-linux-gnu-gcc` not found
+  postPatch = ''
+    rm .cargo/config.toml
+  '';
 
   cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "uutils-coreutils-${finalAttrs.version}";
-    hash = "sha256-yJHp8FCk7W6EDhO/MLrhui50RHW4GOwPQnQmfkdkWd8=";
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-jNFZEafyW0DGpG0tPiI3lzANBiAXYxoOnTsKoGjeOK0=";
   };
-
-  patches = [
-    ./selinux_no_auto_detect.diff
-  ];
 
   buildInputs =
     lib.optionals (lib.meta.availableOn stdenv.hostPlatform acl) [
@@ -80,7 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildMulticallBinary [ "MULTICALL=y" ];
 
   env = lib.optionalAttrs selinuxSupport {
-    SELINUX_INCLUDE_DIR = ''${libselinux.dev}/include'';
+    SELINUX_INCLUDE_DIR = "${libselinux.dev}/include";
     SELINUX_LIB_DIR = lib.makeLibraryPath [
       libselinux
     ];
@@ -98,7 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
       prefix' = lib.optionalString (prefix != null) prefix;
     in
     "${placeholder "out"}/bin/${prefix'}ls";
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   passthru = {
@@ -114,6 +113,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/uutils/coreutils";
     changelog = "https://github.com/uutils/coreutils/releases/tag/${finalAttrs.version}";
     maintainers = with lib.maintainers; [
+      GaetanLepage
       siraben
       matthiasbeyer
     ];

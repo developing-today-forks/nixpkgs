@@ -5,10 +5,8 @@ stdenv:
 let
   # Lib attributes are inherited to the lexical scope for performance reasons.
   inherit (lib)
-    any
     assertMsg
     attrNames
-    boolToString
     concatLists
     concatMap
     concatMapStrings
@@ -17,7 +15,7 @@ let
     elemAt
     extendDerivation
     filter
-    findFirst
+    filterAttrs
     getDev
     head
     imap1
@@ -99,7 +97,8 @@ let
                 prev = f final;
                 thisOverlay = overlay final prev;
                 warnForBadVersionOverride = (
-                  thisOverlay ? version
+                  prev ? src
+                  && thisOverlay ? version
                   && prev ? version
                   # We could check that the version is actually distinct, but that
                   # would probably just delay the inevitable, or preserve tech debt.
@@ -151,10 +150,11 @@ let
     "nostrictaliasing"
     "pacret"
     "pic"
-    "pie"
     "relro"
     "stackprotector"
     "glibcxxassertions"
+    "libcxxhardeningfast"
+    "libcxxhardeningextensive"
     "stackclashprotection"
     "strictoverflow"
     "trivialautovarinit"
@@ -197,10 +197,8 @@ let
 
   inherit (hostPlatform)
     isLinux
-    isDarwin
     isWindows
     isCygwin
-    isOpenBSD
     isStatic
     isMusl
     ;
@@ -227,14 +225,7 @@ let
 
   canExecuteHostOnBuild = buildPlatform.canExecute hostPlatform;
   defaultHardeningFlags =
-    (if stdenvHasCC then stdenv.cc else { }).defaultHardeningFlags or
-    # fallback safe-ish set of flags
-    (
-      if isOpenBSD && isStatic then
-        knownHardeningFlags # Need pie, in fact
-      else
-        remove "pie" knownHardeningFlags
-    );
+    (if stdenvHasCC then stdenv.cc else { }).defaultHardeningFlags or knownHardeningFlags;
   stdenvHostSuffix = optionalString (hostPlatform != buildPlatform) "-${hostPlatform.config}";
   stdenvStaticMarker = optionalString isStatic "-static";
   userHook = config.stdenv.userHook or null;
@@ -434,6 +425,8 @@ let
           (concretizeFlagImplications "fortify" [ "fortify3" ])
           # disabling strictflexarrays1 implies strictflexarrays3 should also be disabled
           (concretizeFlagImplications "strictflexarrays1" [ "strictflexarrays3" ])
+          # disabling libcxxhardeningfast implies libcxxhardeningextensive should also be disabled
+          (concretizeFlagImplications "libcxxhardeningfast" [ "libcxxhardeningextensive" ])
         ]
       );
       enabledHardeningOptions =
@@ -442,7 +435,7 @@ let
         else
           subtractLists hardeningDisable' (defaultHardeningFlags ++ hardeningEnable);
       # hardeningDisable additionally supports "all".
-      erroneousHardeningFlags = subtractLists knownHardeningFlags (
+      erroneousHardeningFlags = subtractLists (knownHardeningFlags ++ [ "pie" ]) (
         hardeningEnable ++ remove "all" hardeningDisable
       );
 
@@ -483,7 +476,6 @@ let
           nativeBuildInputs
           ++ optional separateDebugInfo' ../../build-support/setup-hooks/separate-debug-info.sh
           ++ optional isWindows ../../build-support/setup-hooks/win-dll-link.sh
-          ++ optional isCygwin ../../build-support/setup-hooks/cygwin-dll-link.sh
           ++ optionals doCheck nativeCheckInputs
           ++ optionals doInstallCheck nativeInstallCheckInputs;
 
@@ -640,7 +632,9 @@ let
               else
                 null
             } =
-              builtins.concatStringsSep " " enabledHardeningOptions;
+              lib.warnIf ((builtins.elem "pie" hardeningEnable) || (builtins.elem "pie" hardeningDisable))
+                "The 'pie' hardening flag has been removed in favor of enabling PIE by default in compilers and should no longer be used. PIE can be disabled with the -no-pie compiler flag, but this is usually not necessary as most build systems pass this if needed. Usage of the 'pie' hardening flag will become an error in future."
+                (builtins.concatStringsSep " " enabledHardeningOptions);
 
             # TODO: remove platform condition
             # Enabling this check could be a breaking change as it requires to edit nix.conf
@@ -711,12 +705,15 @@ let
               allowedImpureDLLs
               ++ lib.optionals isCygwin [
                 "KERNEL32.dll"
-                "cygwin1.dll"
               ];
           }
           // (
+            let
+              attrsOutputChecks = makeOutputChecks attrs;
+              attrsOutputChecksFiltered = filterAttrs (_: v: v != null) attrsOutputChecks;
+            in
             if !__structuredAttrs then
-              makeOutputChecks attrs
+              attrsOutputChecks
             else
               {
                 outputChecks = builtins.listToAttrs (
@@ -725,7 +722,7 @@ let
                     value =
                       let
                         raw = zipAttrsWith (_: builtins.concatLists) [
-                          (makeOutputChecks attrs)
+                          attrsOutputChecksFiltered
                           (makeOutputChecks attrs.outputChecks.${name} or { })
                         ];
                       in
@@ -861,10 +858,21 @@ let
       # for a fixed-output derivation, the corresponding inputDerivation should
       # *not* be fixed-output. To achieve this we simply delete the attributes that
       # would make it fixed-output.
-      deleteFixedOutputRelatedAttrs = lib.flip removeAttrs [
+      fixedOutputRelatedAttrs = [
         "outputHashAlgo"
         "outputHash"
         "outputHashMode"
+      ];
+
+      # inputDerivation produces the inputs; not the outputs, so any
+      # restrictions on what used to be the outputs don't serve a purpose
+      # anymore.
+      outputCheckAttrs = [
+        "allowedReferences"
+        "allowedRequisites"
+        "disallowedReferences"
+        "disallowedRequisites"
+        "outputChecks"
       ];
 
     in
@@ -877,12 +885,15 @@ let
         # needed to enter a nix-shell with
         #   nix-build shell.nix -A inputDerivation
         inputDerivation = derivation (
-          deleteFixedOutputRelatedAttrs derivationArg
+          removeAttrs derivationArg (fixedOutputRelatedAttrs ++ outputCheckAttrs)
           // {
             # Add a name in case the original drv didn't have one
-            name = derivationArg.name or "inputDerivation";
+            name = "inputDerivation" + lib.optionalString (derivationArg ? name) "-${derivationArg.name}";
             # This always only has one output
             outputs = [ "out" ];
+            # This doesn’t require any system features even if the original
+            # derivation did.
+            requiredSystemFeatures = [ ];
 
             # Propagate the original builder and arguments, since we override
             # them and they might contain references to build inputs
@@ -912,25 +923,6 @@ let
               ''
             ];
           }
-          // (
-            let
-              sharedOutputChecks = {
-                # inputDerivation produces the inputs; not the outputs, so any
-                # restrictions on what used to be the outputs don't serve a purpose
-                # anymore.
-                allowedReferences = null;
-                allowedRequisites = null;
-                disallowedReferences = [ ];
-                disallowedRequisites = [ ];
-              };
-            in
-            if __structuredAttrs then
-              {
-                outputChecks.out = sharedOutputChecks;
-              }
-            else
-              sharedOutputChecks
-          )
         );
 
         inherit passthru overrideAttrs;

@@ -12,16 +12,16 @@
 
 buildGoModule rec {
   pname = "vault";
-  version = "1.20.4";
+  version = "1.21.4";
 
   src = fetchFromGitHub {
     owner = "hashicorp";
     repo = "vault";
     rev = "v${version}";
-    hash = "sha256-GZ+/NzOjcKTYOq4HajKGD68RNxIdXxfLo/pAewaZ8F8=";
+    hash = "sha256-1yBvcGKzLZYFWlZJL1iJgDFkiT4g2f84iZCjWi2CwDg=";
   };
 
-  vendorHash = "sha256-mhT5s1nIdX/57TDEaWwbni0E7DX0W0WwwvrSr7L66hI=";
+  vendorHash = "sha256-LxWqJroDfGqqCrTej+jkpxEO/+ipXuqSPB2R3bg2v10=";
 
   proxyVendor = true;
 
@@ -80,7 +80,6 @@ buildGoModule rec {
     maintainers = with lib.maintainers; [
       rushmorem
       lnl7
-      offline
       Chili-Man
       techknowlogick
     ];

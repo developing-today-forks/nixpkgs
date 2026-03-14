@@ -5,7 +5,7 @@
   fetchFromGitHub,
 
   # build-system
-  pdm-backend,
+  hatchling,
 
   # dependencies
   jsonpatch,
@@ -15,12 +15,12 @@
   pyyaml,
   tenacity,
   typing-extensions,
+  uuid-utils,
 
   # tests
   blockbuster,
   freezegun,
   grandalf,
-  httpx,
   langchain-core,
   langchain-tests,
   numpy,
@@ -34,26 +34,21 @@
   gitUpdater,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage (finalAttrs: {
   pname = "langchain-core";
-  version = "0.3.72";
+  version = "1.2.17";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
     repo = "langchain";
-    tag = "langchain-core==${version}";
-    hash = "sha256-Q2uGMiODUtwkPdOyuSqp8vqjlLjiXk75QjXp7rr20tc=";
+    tag = "langchain-core==${finalAttrs.version}";
+    hash = "sha256-vuMVNRQSgj3o1KRBgspUglLECPF+YYWpH4/e5iE8ZYY=";
   };
 
-  sourceRoot = "${src.name}/libs/core";
+  sourceRoot = "${finalAttrs.src.name}/libs/core";
 
-  build-system = [ pdm-backend ];
-
-  pythonRelaxDeps = [
-    "packaging"
-    "tenacity"
-  ];
+  build-system = [ hatchling ];
 
   dependencies = [
     jsonpatch
@@ -63,6 +58,7 @@ buildPythonPackage rec {
     pyyaml
     tenacity
     typing-extensions
+    uuid-utils
   ];
 
   pythonImportsCheck = [ "langchain_core" ];
@@ -74,7 +70,6 @@ buildPythonPackage rec {
     blockbuster
     freezegun
     grandalf
-    httpx
     langchain-tests
     numpy
     pytest-asyncio
@@ -140,11 +135,11 @@ buildPythonPackage rec {
   meta = {
     description = "Building applications with LLMs through composability";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/core";
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${src.tag}";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
       natsukium
       sarahec
     ];
   };
-}
+})

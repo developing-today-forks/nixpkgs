@@ -7,22 +7,20 @@
   fetchFromGitLab,
   makeBinaryWrapper,
   makeDesktopItem,
+  nix-update-script,
 }:
-let
-  version = "2.250914.1";
-in
 buildNpmPackage (finalAttrs: {
   pname = "gridtracker2";
-  inherit version;
+  version = "2.260111.0";
 
   src = fetchFromGitLab {
     owner = "gridtracker.org";
     repo = "gridtracker2";
-    tag = "v${version}";
-    hash = "sha256-ME68kGRlIRPs5tUOGb3g2CXJKC52QuMuTMc1ctAMzlk=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-LcaIOzCMtJxeMs7kEqTYmgMlrV62+HOXmG5wk67NUoE=";
   };
 
-  npmDepsHash = "sha256-MUXwJPo/A0gxtUbM3MOWfMcspM1losuDhc5XTc2oqCo=";
+  npmDepsHash = "sha256-8bhOfLLsNSK+/mXku5ukLr65bfk+RwC3SyOGRHndqVQ=";
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -49,10 +47,6 @@ buildNpmPackage (finalAttrs: {
       ];
     })
   ];
-
-  postPatch = ''
-    install -Dvm644 ${./package-lock.json} package-lock.json
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -91,7 +85,7 @@ buildNpmPackage (finalAttrs: {
     install -Dvm644 -t "$out/share/gridtracker2/locales" \
       ./dist/linux*/locales/*
     install -Dvm644 ./resources/icon.png \
-      "$out/share/pixmaps/gridtracker2.png"
+      "$out/share/icons/hicolor/256x256/apps/gridtracker2.png"
 
     makeWrapper ${lib.getExe electron} $out/bin/gridtracker2 \
       --add-flags $out/share/gridtracker2/resources/app.asar \
@@ -107,6 +101,8 @@ buildNpmPackage (finalAttrs: {
   + ''
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Warehouse of amateur radio information";

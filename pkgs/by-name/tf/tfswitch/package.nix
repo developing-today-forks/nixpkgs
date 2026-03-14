@@ -3,18 +3,18 @@
   lib,
   fetchFromGitHub,
 }:
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "tfswitch";
-  version = "1.8.0";
+  version = "1.15.0";
 
   src = fetchFromGitHub {
     owner = "warrensbox";
     repo = "terraform-switcher";
-    rev = "v${version}";
-    sha256 = "sha256-9N6C2y+lGyWSJgDiPsMKo03ji6lhq+0OI1idi1VcrAA=";
+    rev = "v${finalAttrs.version}";
+    sha256 = "sha256-oaroJ02hHYxCFm5oS/IUSe00QH6n7G+LE/1tUO19TAI=";
   };
 
-  vendorHash = "sha256-4qZ5egtNN0O+ESkvavprNd6Xtxh/eyD5INolqKXo674=";
+  vendorHash = "sha256-fF7iAN0sX0yMGIQ3MvH7jIzlHpfY8+uE1XlBi28Q5RU=";
 
   # Disable tests since it requires network access and relies on the
   # presence of release.hashicorp.com
@@ -25,11 +25,11 @@ buildGoModule rec {
     mv $out/bin/terraform-switcher $out/bin/tfswitch
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Command line tool to switch between different versions of terraform";
     mainProgram = "tfswitch";
     homepage = "https://github.com/warrensbox/terraform-switcher";
-    license = licenses.mit;
-    maintainers = with maintainers; [ psibi ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ psibi ];
   };
-}
+})

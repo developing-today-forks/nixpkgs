@@ -25,7 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   checkFlags = [
     # requires rustup and rustfmt
-    "--skip tests::sourcegen::generate_node_kinds"
+    "--skip=tests::sourcegen::generate_node_kinds"
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -36,6 +36,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://sarrus1.github.io/sourcepawn-studio/";
     changelog = "https://github.com/Sarrus1/sourcepawn-studio/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    maintainers = [ lib.maintainers.awwpotato ];
+    maintainers = [ lib.maintainers.da157 ];
   };
 })

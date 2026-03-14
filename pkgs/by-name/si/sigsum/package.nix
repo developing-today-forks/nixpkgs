@@ -8,7 +8,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "sigsum";
-  version = "0.11.2";
+  version = "0.14.0";
 
   src = fetchFromGitLab {
     domain = "git.glasklar.is";
@@ -16,7 +16,7 @@ buildGoModule (finalAttrs: {
     owner = "core";
     repo = "sigsum-go";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-oaYquy0N8yHfKLoNEv8Vte3dpp/UQFZ74mZHin8dDzw=";
+    hash = "sha256-+opDvVUG2OVJ/V1lHPXl2rxk4CCaXxc+4xBguvGqO1o=";
   };
 
   postPatch = ''
@@ -24,7 +24,7 @@ buildGoModule (finalAttrs: {
       --replace-fail "info.Main.Version" '"${finalAttrs.version}"'
   '';
 
-  vendorHash = "sha256-8Tyhd13PRTO2dGOdhkgYmwsVzWfqwOpZ9XSsAtiCcyM=";
+  vendorHash = "sha256-s5IUDGA/8Qv6XhvqJG396EZt7HTaG/BMknPj8uYhVZc=";
 
   ldflags = [
     "-s"
@@ -35,7 +35,6 @@ buildGoModule (finalAttrs: {
 
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/sigsum-key";
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };

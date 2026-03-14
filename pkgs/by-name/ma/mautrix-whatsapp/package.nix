@@ -14,22 +14,20 @@
 
 buildGoModule rec {
   pname = "mautrix-whatsapp";
-  version = "25.10";
-  tag = "v0.2510.0";
+  version = "26.02";
+  tag = "v0.2602.0";
 
   src = fetchFromGitHub {
     owner = "mautrix";
     repo = "whatsapp";
-    tag = tag;
-    hash = "sha256-jJIVlK4vTJpwjugKNtWZhO31t7YX+q3W+ZmU1w/itvM=";
+    inherit tag;
+    hash = "sha256-FcjLOZdXXj6B7Yk6shLQyd9X+UAUdnThNk0qHN3TgGE=";
   };
 
   buildInputs = lib.optional (!withGoolm) olm;
   tags = lib.optional withGoolm "goolm";
 
-  vendorHash = "sha256-LvGapdyGYXNUsC0qniwdoA3pUrOivfFq+nEilw5xFNM=";
-
-  doCheck = false;
+  vendorHash = "sha256-kzEitFzdmeS6kKaDSMpS6pliApwa3tUObd66X+cYkek=";
 
   ldflags = [
     "-s"
@@ -40,11 +38,11 @@ buildGoModule rec {
 
   passthru.updateScript = nix-update-script { };
 
-  meta = with lib; {
+  meta = {
     homepage = "https://github.com/mautrix/whatsapp";
     description = "Matrix-WhatsApp puppeting bridge";
-    license = licenses.agpl3Plus;
-    maintainers = with maintainers; [
+    license = lib.licenses.agpl3Plus;
+    maintainers = with lib.maintainers; [
       vskilet
       ma27
       chvp

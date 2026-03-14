@@ -11,7 +11,6 @@
   parameterized,
   pytest-freezegun,
   pytestCheckHook,
-  pythonOlder,
   setuptools,
   setuptools-scm,
   textparser,
@@ -19,22 +18,20 @@
 
 buildPythonPackage rec {
   pname = "cantools";
-  version = "40.7.1";
+  version = "41.2.1";
   pyproject = true;
-
-  disabled = pythonOlder "3.9";
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-Rn4EzIbgdjBzda6bzYNwcQjpmOPqYBm/lodzWAuaqV8=";
+    hash = "sha256-HxdoK91A9oALjuiW0aGFM/5mRdbeb8j8T3J2n/uuLR4=";
   };
 
-  nativeBuildInputs = [
+  build-system = [
     setuptools
     setuptools-scm
   ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     argparse-addons
     bitstruct
     python-can
@@ -54,12 +51,12 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "cantools" ];
 
-  meta = with lib; {
+  meta = {
     description = "Tools to work with CAN bus";
     homepage = "https://github.com/cantools/cantools";
     changelog = "https://github.com/cantools/cantools/releases/tag/${version}";
-    license = licenses.mit;
-    maintainers = with maintainers; [ gray-heron ];
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ gray-heron ];
     mainProgram = "cantools";
   };
 }

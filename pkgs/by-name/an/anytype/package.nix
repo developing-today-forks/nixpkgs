@@ -3,10 +3,13 @@
   stdenv,
   fetchFromGitHub,
   buildNpmPackage,
+  nodejs_22,
   pkg-config,
   anytype-heart,
   libsecret,
   electron,
+  go,
+  lsof,
   makeDesktopItem,
   copyDesktopItems,
   commandLineArgs ? "",
@@ -14,23 +17,26 @@
 
 buildNpmPackage (finalAttrs: {
   pname = "anytype";
-  version = "0.50.5";
+  version = "0.54.5";
 
   src = fetchFromGitHub {
     owner = "anyproto";
     repo = "anytype-ts";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-HLYYuMtgvF0UHHnThEWSpLIZEvLxNrOtkoXEhSAT24A=";
+    hash = "sha256-TLmmItt5ASlfQA/e1RtcGF/Gf9AU97pf4tpv3B7J9kE=";
   };
 
   locales = fetchFromGitHub {
     owner = "anyproto";
     repo = "l10n-anytype-ts";
-    rev = "aaa83aae39a7dbf59c3c8580be4700edf7481893";
-    hash = "sha256-MOR7peovTYYQR96lOoxyETY0aOH6KcB9vXCqpXKxI/4=";
+    rev = "d744bf573b72c6e8d11e093c8f6702acec263009";
+    hash = "sha256-UnqHXqtBTRmDR/qvS7bktMzDzk9gq+onvvLJgdzqJ7A=";
   };
 
-  npmDepsHash = "sha256-ohlHY7zw+GyaNuwI2t7dQj1bQkXH//LiyiHyi2B+/9I=";
+  npmDepsHash = "sha256-vvnUzzryW5nbAv9OEU+6xwP7lf8+K/mS0mcDswNRTxU=";
+
+  # npm dependency install fails with nodejs_24: https://github.com/NixOS/nixpkgs/issues/474535
+  nodejs = nodejs_22;
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
@@ -38,6 +44,7 @@ buildNpmPackage (finalAttrs: {
 
   nativeBuildInputs = [
     pkg-config
+    go
     copyDesktopItems
   ];
   buildInputs = [ libsecret ];
@@ -63,6 +70,7 @@ buildNpmPackage (finalAttrs: {
     done
 
     npm run build
+    npm run build:nmh
 
     runHook postBuild
   '';
@@ -92,6 +100,9 @@ buildNpmPackage (finalAttrs: {
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}" \
       --add-flags $out/lib/anytype/ \
       --add-flags ${lib.escapeShellArg commandLineArgs}
+
+    wrapProgram $out/lib/anytype/dist/nativeMessagingHost \
+       --prefix PATH : ${lib.makeBinPath [ lsof ]}
 
     runHook postInstall
   '';

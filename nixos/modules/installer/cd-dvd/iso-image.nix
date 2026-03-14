@@ -174,7 +174,7 @@ let
 
   baseIsolinuxCfg = ''
     SERIAL 0 115200
-    TIMEOUT ${builtins.toString syslinuxTimeout}
+    TIMEOUT ${toString syslinuxTimeout}
     UI vesamenu.c32
     MENU BACKGROUND /isolinux/background.png
 
@@ -458,6 +458,11 @@ let
               chainloader (\$root)/EFI/BOOT/${refindBinary}
             }
           fi
+        ''}
+        ${lib.optionalString config.boot.loader.grub.memtest86.enable ''
+          menuentry 'Memtest86+' --class debug {
+            linux (\$root)/boot/memtest.bin ${toString config.boot.loader.grub.memtest86.params}
+          }
         ''}
         menuentry 'Firmware Setup' --class settings {
           fwsetup
@@ -1009,7 +1014,7 @@ in
       ]
       ++ lib.optionals (config.boot.loader.grub.memtest86.enable && config.isoImage.makeBiosBootable) [
         {
-          source = "${pkgs.memtest86plus}/memtest.bin";
+          source = pkgs.memtest86plus.efi;
           target = "/boot/memtest.bin";
         }
       ]

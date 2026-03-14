@@ -6,22 +6,22 @@
   installShellFiles,
 }:
 
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "cirrus-cli";
-  version = "0.155.1";
+  version = "0.165.0";
 
   src = fetchFromGitHub {
     owner = "cirruslabs";
     repo = "cirrus-cli";
-    rev = "v${version}";
-    hash = "sha256-ZjirC80wiW2iCflCWxCG4KpTxnZyLTeCXa6B/SJoiyI=";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-JgbUOMG3pjrJ5lKfK23gLOqA/mgagnm5XrdlFntpnpI=";
   };
 
-  vendorHash = "sha256-ag1HzNrSqGTJGXxhdspxHsJRBu7tuB5nDFiEWh1VOsU=";
+  vendorHash = "sha256-3N2+FMJ4eLv37D6qqgDqG7NMPpm1Dx+Krq8zB05c8dw=";
 
   ldflags = [
-    "-X github.com/cirruslabs/cirrus-cli/internal/version.Version=v${version}"
-    "-X github.com/cirruslabs/cirrus-cli/internal/version.Commit=v${version}"
+    "-X github.com/cirruslabs/cirrus-cli/internal/version.Version=v${finalAttrs.version}"
+    "-X github.com/cirruslabs/cirrus-cli/internal/version.Commit=v${finalAttrs.version}"
   ];
 
   nativeBuildInputs = [ installShellFiles ];
@@ -35,11 +35,11 @@ buildGoModule rec {
   # tests fail on read-only filesystem
   doCheck = false;
 
-  meta = with lib; {
+  meta = {
     description = "CLI for executing Cirrus tasks locally and in any CI";
     homepage = "https://github.com/cirruslabs/cirrus-cli";
-    license = licenses.agpl3Plus;
-    maintainers = with maintainers; [ techknowlogick ];
+    license = lib.licenses.agpl3Plus;
+    maintainers = with lib.maintainers; [ techknowlogick ];
     mainProgram = "cirrus";
   };
-}
+})

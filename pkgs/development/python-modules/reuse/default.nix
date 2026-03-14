@@ -27,14 +27,14 @@
 
 buildPythonPackage rec {
   pname = "reuse";
-  version = "6.1.2";
+  version = "6.2.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fsfe";
     repo = "reuse-tool";
     tag = "v${version}";
-    hash = "sha256-vWBM8bvzsMAT8ONmdx3qy00SPySLsBBXPOd3sgQs/ig=";
+    hash = "sha256-J49RIt7MxnsMJqJAaGvYgUzXMHAT9/frMmrkhWXe5tQ=";
   };
 
   outputs = [
@@ -82,17 +82,17 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "reuse" ];
 
-  meta = with lib; {
+  meta = {
     description = "Tool for compliance with the REUSE Initiative recommendations";
     homepage = "https://github.com/fsfe/reuse-tool";
     changelog = "https://github.com/fsfe/reuse-tool/blob/v${version}/CHANGELOG.md";
-    license = with licenses; [
+    license = with lib.licenses; [
       asl20
       cc-by-sa-40
       cc0
       gpl3Plus
     ];
-    maintainers = with maintainers; [
+    maintainers = with lib.maintainers; [
       FlorianFranzen
       Luflosi
     ];

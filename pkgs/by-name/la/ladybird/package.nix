@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   unicode-emoji,
   unicode-character-database,
   unicode-idna,
@@ -27,20 +28,21 @@
   skia,
   nixosTests,
   unstableGitUpdater,
-  apple-sdk_14,
   libtommath,
   sdl3,
+  icu78,
+  simdjson,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ladybird";
-  version = "0-unstable-2025-10-28";
+  version = "0-unstable-2026-02-14";
 
   src = fetchFromGitHub {
     owner = "LadybirdBrowser";
     repo = "ladybird";
-    rev = "d2b2d573879a50d8f3d568f9c35b8c660bc43013";
-    hash = "sha256-OOqAYUXjyoZHdXOaPqddeUfYD/SNCNZh6a9ysnEseLA=";
+    rev = "ae9106a29da6b93695da2954e2a43b8ab2c2c112";
+    hash = "sha256-cmF5YVnS2kwS3YghPFcuCAP9PWnDs6xbS8XkdH268Qc=";
   };
 
   postPatch = ''
@@ -101,15 +103,22 @@ stdenv.mkDerivation (finalAttrs: {
         # Remove when/if this gets upstreamed in skia.
         "extra_cflags+=[\"-DSKCMS_API=[[gnu::visibility(\\\"default\\\")]]\"]"
       ];
+      # Ladybird depends on the vcpkg-packaged version of skia,
+      # which includes this patch that exposes deprecated interfaces.
+      patches = prev.patches or [ ] ++ [
+        (fetchpatch {
+          url = "https://github.com/microsoft/vcpkg/raw/64e1fbee7d9f40eab5d112aaff648c4dcffe9e47/ports/skia/skpath-enable-edit-methods.patch";
+          hash = "sha256-r5+HqSjACINn8igXqBANQsq0K+fn+Ut8L2VRs40FkTM=";
+        })
+      ];
     }))
     woff2
+    icu78
+    simdjson
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux [
     libpulseaudio.dev
     qt6Packages.qtwayland
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    apple-sdk_14
   ];
 
   cmakeFlags = [
@@ -118,6 +127,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Disable network operations
     "-DLADYBIRD_CACHE_DIR=Caches"
     "-DENABLE_NETWORK_DOWNLOADS=OFF"
+    # Ladybird requires icu 78, but without this flag the default icu
+    # from other dependencies gets picked up instead.
+    (lib.cmakeFeature "ICU_ROOT" (toString icu78.dev))
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     "-DCMAKE_INSTALL_LIBEXECDIR=libexec"

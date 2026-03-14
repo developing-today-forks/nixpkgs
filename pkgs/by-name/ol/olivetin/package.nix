@@ -86,18 +86,20 @@ buildGoModule (
 
   {
     pname = "olivetin";
-    version = "2025.10.30";
+    version = "2025.11.25";
 
     src = fetchFromGitHub {
       owner = "OliveTin";
       repo = "OliveTin";
       tag = finalAttrs.version;
-      hash = "sha256-yzgyv/YLHXCU8h+c53qZQoY9dNOJdF0/EBBZJkN8Urc=";
+      hash = "sha256-HQLInEVXowWpDaSW/4bduUMdYsvQ0Rju1Rl2l9jupYA=";
     };
+
+    patches = [ ./update-go-sum.patch ];
 
     modRoot = "service";
 
-    vendorHash = "sha256-1vZCQBc/J3E/QRS8Bkfc1exDZJIn9739/gyPrpQpiHI=";
+    vendorHash = "sha256-xSroaS6fwHrQ0s09uD3bkBZWWxbIndiOGL2JPvKzC6E=";
 
     ldflags = [
       "-s"
@@ -140,6 +142,17 @@ buildGoModule (
       license = lib.licenses.agpl3Only;
       maintainers = with lib.maintainers; [ defelo ];
       mainProgram = "OliveTin";
+      knownVulnerabilities = [
+        "CVE-2026-27626: OS Command Injection via password argument type and webhook JSON extraction bypasses shell safety checks"
+        "CVE-2026-28342: Unauthenticated Denial of Service via Memory Exhaustion in PasswordHash API Endpoint"
+        "CVE-2026-28789: Unauthenticated DoS via concurrent map writes in OAuth2 state handling"
+        "CVE-2026-28790: Unauthenticated Action Termination via KillAction When Guests Must Login"
+        "CVE-2026-30223: JWT Audience Validation Bypass in Local Key and HMAC Modes"
+        "CVE-2026-30224: Session Fixation - Logout Fails to Invalidate Server-Side Session"
+        "CVE-2026-30225: RestartAction always runs actions as guest"
+        "CVE-2026-30233: View permission not being checked when returning dashboards"
+        "CVE-2026-31817: Unsafe parsing of UniqueTrackingId can be used to write files"
+      ];
     };
   }
 )

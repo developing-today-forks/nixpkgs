@@ -14,18 +14,14 @@
 
 buildNpmPackage (finalAttrs: {
   pname = "bitwarden-cli";
-  version = "2025.10.0";
+  version = "2026.2.0";
 
   src = fetchFromGitHub {
     owner = "bitwarden";
     repo = "clients";
     tag = "cli-v${finalAttrs.version}";
-    hash = "sha256-A7bxAdFDChr7yiexV70N3tqhaUVAwJdGhhRKJyX0ra8=";
+    hash = "sha256-BiL9ugimdDKIzIoehGqdBfJkTOjbOMl8XV+0g/aGS/k=";
   };
-
-  patches = [
-    ./fix-lockfile.patch
-  ];
 
   postPatch = ''
     # remove code under unfree license
@@ -34,7 +30,7 @@ buildNpmPackage (finalAttrs: {
 
   nodejs = nodejs_22;
 
-  npmDepsHash = "sha256-fX6VGSQIpcyz3x9PzLlZ4a4W/CFiY/lx2VEAry45qo8=";
+  npmDepsHash = "sha256-S34Lxr9dH9wjBmpDYA530z2/HiY4D4b/3rswWDqsrFU=";
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     perl
@@ -91,7 +87,6 @@ buildNpmPackage (finalAttrs: {
     versionCheckHook
   ];
   versionCheckKeepEnvironment = [ "HOME" ];
-  versionCheckProgramArg = "--version";
 
   passthru = {
     tests = {

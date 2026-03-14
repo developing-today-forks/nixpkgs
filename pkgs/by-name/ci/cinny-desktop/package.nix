@@ -7,6 +7,7 @@
   cinny,
   desktop-file-utils,
   wrapGAppsHook3,
+  makeBinaryWrapper,
   pkg-config,
   openssl,
   glib-networking,
@@ -18,18 +19,19 @@
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cinny-desktop";
   # We have to be using the same version as cinny-web or this isn't going to work.
-  version = "4.10.1";
+  version = "4.10.5";
 
+  # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "cinnyapp";
     repo = "cinny-desktop";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-SUbEanFIvjj2wyy/nuq+91F5on7wuLWcpVt1U8XWjRI=";
+    hash = "sha256-DRSafPNED9fpm3w5K4a9r8581xMpttfo7BEDBIJ87Kc=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/src-tauri";
 
-  cargoHash = "sha256-NL5vsuSNKduRW2TaXWFA0pjszVa8EYU5cRaTZHCooLU=";
+  cargoHash = "sha256-q6YMAjK+BBYBpk8menA1sM3x/FCnAh40t70fs9knnRo=";
 
   postPatch =
     let
@@ -52,7 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   postInstall =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
       mkdir -p "$out/bin"
-      ln -sf "$out/Applications/Cinny.app/Contents/MacOS/Cinny" "$out/bin/cinny"
+      makeWrapper "$out/Applications/Cinny.app/Contents/MacOS/Cinny" "$out/bin/cinny"
     ''
     + lib.optionalString stdenv.hostPlatform.isLinux ''
       desktop-file-edit \
@@ -74,6 +76,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     desktop-file-utils
     pkg-config
     wrapGAppsHook3
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    makeBinaryWrapper
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
@@ -87,6 +92,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/cinnyapp/cinny-desktop";
     maintainers = with lib.maintainers; [
       qyriad
+      rebmit
       ryand56
     ];
     license = lib.licenses.agpl3Only;

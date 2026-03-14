@@ -4,6 +4,7 @@
   symlinkJoin,
   buildPythonPackage,
   fetchFromGitHub,
+  gitUpdater,
 
   cmake,
 
@@ -26,7 +27,7 @@
 
 let
   pname = "bitsandbytes";
-  version = "0.48.1";
+  version = "0.49.1";
 
   brokenConditions = lib.attrsets.filterAttrs (_: cond: cond) {
     "CUDA and ROCm are mutually exclusive" = cudaSupport && rocmSupport;
@@ -45,10 +46,12 @@ let
     (lib.getDev cuda_cccl) # <thrust/*>
     (lib.getDev libcublas) # cublas_v2.h
     (lib.getLib libcublas)
+    (lib.getInclude libcublas) # cublasLt.h
     libcurand
     libcusolver # cusolverDn.h
     (lib.getDev libcusparse) # cusparse.h
     (lib.getLib libcusparse) # cusparse.h
+    (lib.getInclude libcusparse) # cusparse.h
     (lib.getDev cuda_cudart) # cuda_runtime.h cuda_runtime_api.h
   ];
 
@@ -78,7 +81,7 @@ buildPythonPackage {
     owner = "bitsandbytes-foundation";
     repo = "bitsandbytes";
     tag = version;
-    hash = "sha256-OkhWv5Mb/cnWJteCXvDEkWQvK+QK26YQex39yWIezrQ=";
+    hash = "sha256-nNhxDJITXNIZMXuZdzpF5dl1K1kFEVQ0gbTqZnOf/sI=";
   };
 
   patches = [
@@ -160,11 +163,14 @@ buildPythonPackage {
 
     (lib.cmakeFeature "CMAKE_HIP_ARCHITECTURES" (builtins.concatStringsSep ";" rocmGpuTargets))
   ];
-  CUDA_HOME = lib.optionalString cudaSupport "${cuda-native-redist}";
-  NVCC_PREPEND_FLAGS = lib.optionals cudaSupport [
-    "-I${cuda-native-redist}/include"
-    "-L${cuda-native-redist}/lib"
-  ];
+
+  env = lib.optionalAttrs cudaSupport {
+    CUDA_HOME = cuda-native-redist;
+    NVCC_PREPEND_FLAGS = toString [
+      "-I${cuda-native-redist}/include"
+      "-L${cuda-native-redist}/lib"
+    ];
+  };
 
   preBuild = ''
     make -j $NIX_BUILD_CORES
@@ -189,6 +195,10 @@ buildPythonPackage {
       rocmPackages
       brokenConditions # To help debug when a package is broken due to CUDA support
       ;
+
+    updateScript = gitUpdater {
+      ignoredVersions = "continuous-release.*";
+    };
   };
 
   meta = {

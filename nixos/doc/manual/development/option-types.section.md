@@ -31,6 +31,21 @@ merging is handled.
 :   A path that is contained in the Nix store. This can be a top-level store
     path like `pkgs.hello` or a descendant like `"${pkgs.hello}/bin/hello"`.
 
+`types.externalPath`
+
+:   A path that is not contained in the Nix store. Typical use cases are:
+    secrets, password or any other external file.
+
+::: {.warning}
+This type only validates that the path is not *currently* in the Nix store.
+It does NOT prevent the value from being copied to the store later when:
+- Referenced in a derivation
+- Used in certain path operations (e.g., `${path}` interpolation)
+- Passed to functions that copy to the store
+
+Users must still be careful about how they reference these paths.
+:::
+
 `types.pathWith` { *`inStore`* ? `null`, *`absolute`* ? `null` }
 
 :   A filesystem path. Either a string or something that can be coerced
@@ -481,6 +496,20 @@ Composed types are types that take a type as parameter. `listOf
     function *`f`* which takes an argument of type *`from`* and return a
     value of type *`to`*. Can be used to preserve backwards compatibility
     of an option if its type was changed.
+
+`types.json`
+
+:   A type representing JSON-compatible values. This includes `null`, booleans,
+    integers, floats, strings, paths, attribute sets, and lists.
+    Attribute sets and lists can be arbitrarily nested and contain any JSON-compatible
+    values.
+
+`types.toml`
+
+:   A type representing TOML-compatible values. This includes booleans,
+    integers, floats, strings, paths, attribute sets, and lists.
+    Attribute sets and lists can be arbitrarily nested and contain any TOML-compatible
+    values.
 
 ## Submodule {#section-option-types-submodule}
 

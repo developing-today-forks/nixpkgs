@@ -2,7 +2,6 @@
   lib,
   stdenv,
   buildPythonPackage,
-  pythonOlder,
   pythonAtLeast,
   python,
   fetchPypi,
@@ -17,7 +16,6 @@
   protobuf,
   pyyaml,
   requests,
-  watchfiles,
 
   # optional-dependencies
   # cgraph
@@ -34,43 +32,51 @@
   aiohttp-cors,
   colorful,
   opencensus,
+  opentelemetry-exporter-prometheus,
+  opentelemetry-proto,
+  opentelemetry-sdk,
   prometheus-client,
   pydantic,
   py-spy,
   smart-open,
   virtualenv,
+  # llm
+  async-timeout,
+  hf-transfer,
+  jsonref,
+  meson,
+  ninja,
+  # nixl,
+  pybind11,
+  typer,
+  vllm,
   # observability
   memray,
-  opentelemetry-api,
-  opentelemetry-sdk,
-  opentelemetry-exporter-otlp,
   # rllib
   dm-tree,
   gymnasium,
   lz4,
-  # ormsgpack,
+  ormsgpack,
   scipy,
-  typer,
-  rich,
   # serve
   fastapi,
   starlette,
   uvicorn,
+  watchfiles,
+  # serve-async-inference
+  celery,
   # serve-grpc
   pyopenssl,
   # tune
   tensorboardx,
 }:
 
-let
+buildPythonPackage (finalAttrs: {
   pname = "ray";
-  version = "2.51.0";
-in
-buildPythonPackage rec {
-  inherit pname version;
+  version = "2.54.0";
   format = "wheel";
 
-  disabled = pythonOlder "3.9" || pythonAtLeast "3.14";
+  disabled = pythonAtLeast "3.14";
 
   src =
     let
@@ -84,32 +90,32 @@ buildPythonPackage rec {
       # Results are in ./ray-hashes.nix
       hashes = {
         x86_64-linux = {
-          cp310 = "sha256-Ag3Ynx7RHTOM75BhdGsatc8mNpDBkiQi4zPsdC8Cvpc=";
-          cp311 = "sha256-EYXBn2iHyik5DC+EQTD3LDOX1XNZRxX5paZN7PuyGUI=";
-          cp312 = "sha256-cLfLCsRVoZbIIRMkQAzy93c60NXwWF0htiVZ6aADOAk=";
-          cp313 = "sha256-yCsJhLPRDYhNI69cpK3oqjdoyVfMtDJwSvjpIOXN4y0=";
+          cp311 = "sha256-kouwkkWjxvfDwRO6jq/Gn5SNqWAtfzPoJR7N+XwVdhU=";
+          cp312 = "sha256-qXKv1ao92pnQsvNptfYuXdlYZat9N78uCg4NLPvZsyU=";
+          cp313 = "sha256-q4nmCJq7bkb7mP3ZbTmbMahS15EnzYrAB0bGHZPe+iw=";
         };
         aarch64-linux = {
-          cp310 = "sha256-48d59JxV5tth4iylLuET+Apo5APafNbaDoSAyuZi9QM=";
-          cp311 = "sha256-2Z31lVJ3rK4YasnGzux39Lp2Lw8hNaP3AVd3cYeu7T0=";
-          cp312 = "sha256-BHFnYv5SJOp9Dp25w5ZhBLGyrsyr/MhQhRAtdPAzShE=";
-          cp313 = "sha256-PfIB7kmN8ZCAN6N5VK33C77Id6gdPWD/Lcj0LIlh530=";
+          cp311 = "sha256-SRrlargNiCLE6vTVu5bc8ypiMdjXt264A0QA65vhuxg=";
+          cp312 = "sha256-eVriHWt2QkXT9SG8WDNEbVhWnn396cV3dBfrKF2HRQ8=";
+          cp313 = "sha256-iVLCOoqpTxByjC0W4Nw3MtCaoOYlSAF1f/SUmEohT0U=";
         };
         aarch64-darwin = {
-          cp310 = "sha256-olwAGedusCeQeyi4y77LYteoYX55/0dcHWURYq/a/O0=";
-          cp311 = "sha256-eTY8nQJzJVEw81ncGJuhpye7mCiudzUxQ35WryCsaxw=";
-          cp312 = "sha256-BfktgeYrADF5pXwrMo3alloboyXdtSJWZVmapLUew6U=";
-          cp313 = "sha256-cRGOKyOm0t8hQoauqDEXU80+y6CNPApjGl8gsc8lJg0=";
+          cp311 = "sha256-jjndVrR6Chgg1aWlQ4W75U0dZ+EJNzbRLY7U6Z0PpFU=";
+          cp312 = "sha256-z1wztLE4UOwkpb1fnZ4KgWH45Ya/0pflKRPRcN7ER/4=";
+          cp313 = "sha256-Wtd5Yf6hbGl6D7DlEhbdOcC+wohozeVKxmjt1Y0SuK4=";
         };
       };
     in
     fetchPypi {
-      inherit pname version format;
+      inherit (finalAttrs) pname version;
+      format = "wheel";
       dist = pyShortVersion;
       python = pyShortVersion;
       abi = pyShortVersion;
       platform = platforms.${stdenv.hostPlatform.system} or { };
-      sha256 = hashes.${stdenv.hostPlatform.system}.${pyShortVersion} or { };
+      sha256 =
+        hashes.${stdenv.hostPlatform.system}.${pyShortVersion}
+          or (throw "No hash specified for '${stdenv.hostPlatform.system}.${pyShortVersion}'");
     };
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
@@ -125,7 +131,6 @@ buildPythonPackage rec {
     protobuf
     pyyaml
     requests
-    watchfiles
   ];
 
   optional-dependencies = lib.fix (self: {
@@ -141,6 +146,8 @@ buildPythonPackage rec {
       ++ self.observability
       ++ self.rllib
       ++ self.serve
+      ++ self.serve-async-inference
+      ++ self.serve-grpc
       ++ self.train
       ++ self.tune
     );
@@ -160,6 +167,9 @@ buildPythonPackage rec {
       colorful
       grpcio
       opencensus
+      opentelemetry-exporter-prometheus
+      opentelemetry-proto
+      opentelemetry-sdk
       prometheus-client
       pydantic
       py-spy
@@ -167,22 +177,37 @@ buildPythonPackage rec {
       smart-open
       virtualenv
     ];
+    llm = lib.unique (
+      [
+        async-timeout
+        hf-transfer
+        jsonref
+        jsonschema
+        meson
+        ninja
+        # nixl
+        pybind11
+        typer
+        vllm
+      ]
+      ++ self.data
+      ++ self.serve
+      ++ vllm.optional-dependencies.audio
+    );
     observability = [
       memray
-      opentelemetry-api
-      opentelemetry-sdk
-      opentelemetry-exporter-otlp
     ];
-    rllib = [
-      dm-tree
-      gymnasium
-      lz4
-      # ormsgpack
-      pyyaml
-      scipy
-      typer
-      rich
-    ];
+    rllib = lib.unique (
+      [
+        dm-tree
+        gymnasium
+        lz4
+        ormsgpack
+        pyyaml
+        scipy
+      ]
+      ++ self.tune
+    );
     serve = lib.unique (
       [
         fastapi
@@ -193,6 +218,12 @@ buildPythonPackage rec {
       ]
       ++ self.default
     );
+    serve-async-inference = lib.unique (
+      [
+        celery
+      ]
+      ++ self.serve
+    );
     serve-grpc = lib.unique (
       [
         grpcio
@@ -200,7 +231,12 @@ buildPythonPackage rec {
       ]
       ++ self.serve
     );
-    train = self.tune;
+    train = lib.unique (
+      [
+        pydantic
+      ]
+      ++ self.tune
+    );
     tune = [
       fsspec
       pandas
@@ -223,7 +259,7 @@ buildPythonPackage rec {
   meta = {
     description = "Unified framework for scaling AI and Python applications";
     homepage = "https://github.com/ray-project/ray";
-    changelog = "https://github.com/ray-project/ray/releases/tag/ray-${version}";
+    changelog = "https://github.com/ray-project/ray/releases/tag/ray-${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ billhuang ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
@@ -233,4 +269,4 @@ buildPythonPackage rec {
       "x86_64-linux"
     ];
   };
-}
+})

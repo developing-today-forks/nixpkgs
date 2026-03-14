@@ -46,7 +46,7 @@ buildBazelPackage rec {
   bazel = bazel_7;
 
   fetchAttrs = {
-    hash = "sha256-c+v2vWvTmwJ7MFh3VJlUh+iSINjsX66W9K0UBX5K/1s=";
+    hash = "sha256-G05vlHiOJp4rvQBUj2ffRBuWBA/lpJju8CLiopYJckE=";
 
     preInstall = ''
       # Remove zip code data. It will be replaced with jp-zip-codes from nixpkgs
@@ -101,14 +101,14 @@ buildBazelPackage rec {
     runHook postInstall
   '';
 
-  meta = with lib; {
+  meta = {
     isIbusEngine = true;
     description = "Japanese input method from Google";
     mainProgram = "mozc_emacs_helper";
     homepage = "https://github.com/google/mozc";
-    license = licenses.free;
-    platforms = platforms.linux;
-    maintainers = with maintainers; [
+    license = lib.licenses.free;
+    platforms = lib.platforms.linux;
+    maintainers = with lib.maintainers; [
       pineapplehunter
     ];
   };

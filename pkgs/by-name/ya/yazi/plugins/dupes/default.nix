@@ -7,13 +7,13 @@
 }:
 mkYaziPlugin {
   pname = "dupes.yazi";
-  version = "0-unstable-2025-10-16";
+  version = "0-unstable-2026-01-29";
 
   src = fetchFromGitHub {
     owner = "mshnwq";
     repo = "dupes.yazi";
-    rev = "012a21e1864296503f7bb1e7297b71fe57af8994";
-    hash = "sha256-VUF7vmtnXuEsbyS0/pPTgwrDDrnMqt77eIkeQZFxoZk=";
+    rev = "1edf7a406410d5d18b4fbda7b3540e35ab3ad5d6";
+    hash = "sha256-7x8N1heASHlYaLzzzdO4jm6IrTgqFbybp+I9EdF7c3M=";
   };
 
   postPatch = ''

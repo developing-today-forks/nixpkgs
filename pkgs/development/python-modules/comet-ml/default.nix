@@ -23,12 +23,12 @@
 
 buildPythonPackage rec {
   pname = "comet-ml";
-  version = "3.53.2";
+  version = "3.55.0";
 
   src = fetchPypi {
     pname = "comet_ml";
     inherit version;
-    hash = "sha256-8OEcuC79Kf4CTCxKkzIMle9zph27UvE9f1P3Wt0/eGM=";
+    hash = "sha256-bNfh6tVpsU2LrSLcAKy5lXLgd4lbo3/6dzzMB4+Eh08=";
   };
 
   pyproject = true;

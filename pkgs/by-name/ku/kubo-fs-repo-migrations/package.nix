@@ -251,14 +251,16 @@ let
 in
 
 symlinkJoin {
-  name = "kubo-fs-repo-migrations-${version}";
+  pname = "kubo-fs-repo-migrations";
+  inherit version;
   paths = if stubBrokenMigrations then migrationsBrokenStubbed else migrationsBrokenRemoved;
   meta = (removeAttrs kubo-migrator-unwrapped.meta [ "mainProgram" ]) // {
     description = "Several individual migrations for migrating the filesystem repository of Kubo one version at a time";
     longDescription = ''
       This package contains all the individual migrations in the bin directory.
       This is used by fs-repo-migrations and could also be used by Kubo itself
-      when starting it like this: ipfs daemon --migrate
+      when starting it like this: `ipfs daemon --migrate`
+      or when calling `ipfs repo migrate --to=16`.
     '';
   };
 }

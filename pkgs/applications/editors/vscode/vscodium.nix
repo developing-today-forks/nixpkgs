@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  callPackage,
+  buildVscode,
   fetchurl,
   nixosTests,
   commandLineArgs ? "",
@@ -19,6 +19,7 @@ let
       aarch64-linux = "linux-arm64";
       aarch64-darwin = "darwin-arm64";
       armv7l-linux = "linux-armhf";
+      loongarch64-linux = "linux-loong64";
     }
     .${system} or throwSystem;
 
@@ -26,22 +27,23 @@ let
 
   hash =
     {
-      x86_64-linux = "sha256-+aMcRAM1mOu2rLCVGtkygGgM/8VNeteM66BOlmQCIpA=";
-      x86_64-darwin = "sha256-A/5l3LZn7SYNLkixNAfcb0HJlXY9dN9tjDT/KJ4Ycqk=";
-      aarch64-linux = "sha256-LxVKn5ld2mhsV9ya2V9zXEjtEZRAUWupMgkWXSgrL+8=";
-      aarch64-darwin = "sha256-jF18swYLWCtT0GerSLkT01M1sGZmkAb6bRZlRL5Bna4=";
-      armv7l-linux = "sha256-MlN22vWh0FiqgYQqZ1YjhAEtPRGaGv4Rz3J3LF6udts=";
+      x86_64-linux = "sha256-x2Un085IBlTTu98fv1Z+INu8UDRttbbNJMZJ3ReHPNE=";
+      x86_64-darwin = "sha256-3CzZlPCNHy9XtfTSh18Up/iJL0+X16O047UelMkpl10=";
+      aarch64-linux = "sha256-5prZ9RO8sPv4PunAqwo5Wjc7+ApfGF5FfWEai0Biaqw=";
+      aarch64-darwin = "sha256-jnAqT3KmQ590eTP4EHEIu03TeRcYDU+bLc/yuJ+Qx/s=";
+      armv7l-linux = "sha256-PVQ3UVmp8QQL1702kSRSSdh3QYNrD81/3ldFEPMwMKM=";
+      loongarch64-linux = "sha256-J+YIZbGjMJnHVrOmlML1wpGiwBbwcPJkMdtjxfAgT8w=";
     }
     .${system} or throwSystem;
 
   sourceRoot = lib.optionalString (!stdenv.hostPlatform.isDarwin) ".";
 in
-callPackage ./generic.nix rec {
+buildVscode rec {
   inherit sourceRoot commandLineArgs useVSCodeRipgrep;
 
   # Please backport all compatible updates to the stable release.
   # This is important for the extension ecosystem.
-  version = "1.105.17075";
+  version = "1.110.11631";
   pname = "vscodium";
 
   executableName = "codium";
@@ -53,7 +55,7 @@ callPackage ./generic.nix rec {
     inherit hash;
   };
 
-  tests = nixosTests.vscodium;
+  tests = nixosTests.vscodium.xorg;
 
   updateScript = ./update-vscodium.sh;
 
@@ -89,6 +91,7 @@ callPackage ./generic.nix rec {
       "aarch64-linux"
       "aarch64-darwin"
       "armv7l-linux"
+      "loongarch64-linux"
     ];
     # requires libc.so.6 and other glibc specifics
     broken = stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isGnu;

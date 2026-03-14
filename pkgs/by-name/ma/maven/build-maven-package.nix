@@ -4,7 +4,6 @@
   jdk,
   jre-generate-cacerts,
   maven,
-  perl,
   writers,
 }:
 
@@ -13,7 +12,9 @@
   sourceRoot ? null,
   buildOffline ? false,
   doCheck ? true,
+  prePatch ? null,
   patches ? [ ],
+  postPatch ? null,
   pname,
   version,
   mvnJdk ? jdk,
@@ -36,15 +37,22 @@ let
 
   fetchedMavenDeps = stdenv.mkDerivation (
     {
-      name = "${pname}-${version}-maven-deps";
-      inherit src sourceRoot patches;
+      pname = "maven-deps-${pname}";
+      inherit
+        src
+        sourceRoot
+        prePatch
+        patches
+        postPatch
+        version
+        ;
 
       nativeBuildInputs = [
         maven
       ]
       ++ args.nativeBuildInputs or [ ];
 
-      JAVA_HOME = mvnJdk;
+      env.JAVA_HOME = mvnJdk;
 
       impureEnvVars = lib.fetchers.proxyImpureEnvVars;
 
@@ -123,7 +131,7 @@ stdenv.mkDerivation (
       maven
     ];
 
-    JAVA_HOME = mvnJdk;
+    env.JAVA_HOME = mvnJdk;
 
     buildPhase = ''
       runHook preBuild

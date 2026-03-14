@@ -7,13 +7,13 @@
 
 buildGo124Module rec {
   pname = "etcd";
-  version = "3.4.38";
+  version = "3.4.39";
 
   src = fetchFromGitHub {
     owner = "etcd-io";
     repo = "etcd";
     rev = "v${version}";
-    hash = "sha256-+fRmz52ZqQTL8JJmSsufoVJP/FGHez9LliEwGsoCE7s=";
+    hash = "sha256-S1aNEd7pPgSu8vFhXIYFjEvfBG3OtmuKCvD5Zgj0m30=";
   };
 
   proxyVendor = true;
@@ -44,6 +44,6 @@ buildGo124Module rec {
     downloadPage = "https://github.com/etcd-io/etcd/";
     license = lib.licenses.asl20;
     homepage = "https://etcd.io/";
-    maintainers = [ ];
+    maintainers = with lib.maintainers; [ superherointj ];
   };
 }

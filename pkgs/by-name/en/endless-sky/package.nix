@@ -3,9 +3,12 @@
   stdenv,
   fetchFromGitHub,
   SDL2,
+  libavif,
   libpng,
   libjpeg,
-  libX11,
+  libogg,
+  libx11,
+  flac,
   glew,
   openal,
   cmake,
@@ -15,15 +18,15 @@
   minizip,
 }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "endless-sky";
-  version = "0.10.14";
+  version = "0.11.0";
 
   src = fetchFromGitHub {
     owner = "endless-sky";
     repo = "endless-sky";
-    tag = "v${version}";
-    hash = "sha256-/jW9TXmK2xgHUQe6H+WSCHPQthxvoNepdkdnOD3sXXo=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-zeLM3n6pm5FxT+GO3dtJwDFKHs8boUuQBShU/PDCeFA=";
   };
 
   patches = [
@@ -47,9 +50,12 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     SDL2
+    libavif
     libpng
     libjpeg
-    libX11
+    libogg
+    libx11
+    flac
     glew
     openal
     libmad
@@ -57,20 +63,20 @@ stdenv.mkDerivation rec {
     minizip
   ];
 
-  meta = with lib; {
+  meta = {
     description = "Sandbox-style space exploration game similar to Elite, Escape Velocity, or Star Control";
     mainProgram = "endless-sky";
     homepage = "https://endless-sky.github.io/";
-    license = with licenses; [
+    license = with lib.licenses; [
       gpl3Plus
       cc-by-sa-30
       cc-by-sa-40
       publicDomain
     ];
-    maintainers = with maintainers; [
+    maintainers = with lib.maintainers; [
       _360ied
       lilacious
     ];
-    platforms = platforms.linux; # Maybe other non-darwin Unix
+    platforms = lib.platforms.linux; # Maybe other non-darwin Unix
   };
-}
+})

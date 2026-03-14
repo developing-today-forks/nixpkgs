@@ -18,21 +18,21 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "matrix-authentication-service";
-  version = "1.4.1";
+  version = "1.12.0";
 
   src = fetchFromGitHub {
     owner = "element-hq";
     repo = "matrix-authentication-service";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-9mQXWpGy+oFK5cEWeW88CSZQqfpmOAUS1x9KkyEMg+0=";
+    hash = "sha256-fHAho52KO43Vot+JliR80glC0AY1cqZzz/ZxecGk9P8=";
   };
 
-  cargoHash = "sha256-3ODOJY8/hksbMak8SsQP87rOnCd7+1G0wD4m5daPrbk=";
+  cargoHash = "sha256-H8ZXf8h7JWhhDTjOJSIBtc2R2Cdlt9+3wJpJrxAnQ8o=";
 
   npmDeps = fetchNpmDeps {
     name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
     src = "${finalAttrs.src}/${finalAttrs.npmRoot}";
-    hash = "sha256-UgvT81DR4pWlQRfQgmecp+AOUSih4+/v7c1ApIDf3Ts=";
+    hash = "sha256-LiuAlyZerLQgOAl7n2MnDQrRFg7aQTncB1iXtnSOLzc=";
   };
 
   npmRoot = "frontend";
@@ -72,10 +72,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail ./share/policy.wasm "$out/share/$pname/policy.wasm"
   '';
 
-  preBuild = ''
-    make -C policies
-    (cd "$npmRoot" && npm run build)
-  '';
+  preBuild =
+    let
+      rustTarget = stdenv.hostPlatform.rust.rustcTarget;
+      rustTargetUnderscore = builtins.replaceStrings [ "-" ] [ "_" ] rustTarget;
+    in
+    ''
+      make -C policies
+      (cd "$npmRoot" && npm run build)
+
+      # Fix aws-lc-sys cross-compilation:
+      # The cc crate looks for "aarch64-linux-gnu-gcc")
+      # when CC is unset and TARGET != HOST, but Nix's cross-compiler is
+      # named "aarch64-unknown-linux-gnu-gcc" (with vendor).
+      # We set the target-specific CC_<target> variable so the cc crate
+      # and aws-lc-sys find the correct cross-compiler, then unset the
+      # generic CC so aws-lc-sys doesn't misassign it.
+      export CC_${rustTargetUnderscore}=$CC
+      export CXX_${rustTargetUnderscore}=$CXX
+      unset CC CXX
+    '';
 
   # Adapted from https://github.com/element-hq/matrix-authentication-service/blob/v0.20.0/.github/workflows/build.yaml#L75-L84
   postInstall = ''
@@ -87,7 +103,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
   passthru.updateScript = nix-update-script {
     extraArgs = [

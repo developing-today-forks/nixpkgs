@@ -5,29 +5,40 @@
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  nodejs,
   usage,
   testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "usage";
-  version = "2.2.2";
+  version = "2.18.2";
 
   src = fetchFromGitHub {
     owner = "jdx";
     repo = "usage";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Hnq3ViMrNIo9m/1mePjEzMv87U24wY50UiYxnpJqHR8=";
+    hash = "sha256-vypgdu9G+6soLl9QrlRiA1U/2ijFUEqwPS6XrV9Ubek=";
   };
 
-  cargoHash = "sha256-Zj8Z88gYx+i0VN14HbO1LSlWjZX1EvrtyKvAwpnFMgs=";
+  cargoHash = "sha256-CnrBFH1dnFOL8dwyFioj6FO2MPqpl169y9YMgQpPi5Y=";
 
   postPatch = ''
-    substituteInPlace ./examples/mounted.sh \
+    substituteInPlace ./examples/*.sh \
       --replace-fail '/usr/bin/env -S usage' "$(pwd)/target/${stdenv.targetPlatform.rust.rustcTargetSpec}/release/usage"
   '';
 
   nativeBuildInputs = [ installShellFiles ];
+
+  nativeCheckInputs = [
+    # for some tests
+    nodejs
+  ];
+
+  checkFlags = [
+    # has --include-bash-completion-lib so requires external lib downloaded on runtime
+    "--skip=test_bash_completion_integration"
+  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd usage \

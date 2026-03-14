@@ -4,14 +4,14 @@
   fetchFromGitHub,
   versionCheckHook,
 }:
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-modules";
   version = "0.25.0";
 
   src = fetchFromGitHub {
     owner = "regexident";
     repo = "cargo-modules";
-    tag = "v${version}";
+    tag = "v${finalAttrs.version}";
     hash = "sha256-FghGqRV9KaRPZ7l3t/AB7f1XufOsNdiGFUk8GUwAxtY=";
   };
 
@@ -44,18 +44,16 @@ rustPlatform.buildRustPackage rec {
 
   nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
 
   meta = {
     description = "Cargo plugin for showing a tree-like overview of a crate's modules";
     homepage = "https://github.com/regexident/cargo-modules";
-    changelog = "https://github.com/regexident/cargo-modules/blob/${src.tag}/CHANGELOG.md";
+    changelog = "https://github.com/regexident/cargo-modules/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [
-      figsoda
       rvarago
       matthiasbeyer
     ];
     mainProgram = "cargo-modules";
   };
-}
+})
